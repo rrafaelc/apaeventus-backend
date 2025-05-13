@@ -5,6 +5,8 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { CustomRequest } from 'src/global/interfaces/custom-request.interface';
+import { User } from 'src/user/entities/user';
 import { JwtConstants } from './constants';
 import { TokenPayload } from './dtos/token';
 
@@ -13,7 +15,7 @@ export class AuthGuard implements CanActivate {
   constructor(private readonly jwtService: JwtService) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const request = context.switchToHttp().getRequest<Request>();
+    const request = context.switchToHttp().getRequest<CustomRequest>();
 
     const token = this.extractTokenFromHeader(request);
 
@@ -26,7 +28,7 @@ export class AuthGuard implements CanActivate {
         secret: JwtConstants.secret,
       });
 
-      request['user'] = payload;
+      request.user = payload as User;
     } catch {
       throw new UnauthorizedException('Invalid access token');
     }
@@ -34,7 +36,7 @@ export class AuthGuard implements CanActivate {
     return true;
   }
 
-  private extractTokenFromHeader(request: Request): string | undefined {
+  private extractTokenFromHeader(request: CustomRequest): string | undefined {
     const authorizationHeader = request.headers['authorization'] as string;
 
     if (authorizationHeader && typeof authorizationHeader === 'string') {
