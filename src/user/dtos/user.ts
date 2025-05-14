@@ -1,8 +1,7 @@
-export class User {
+export class UserDTO {
   id: number;
   email: string;
   name: string;
-  password: string;
   refreshToken: string | null;
   createdAt: Date;
   updatedAt: Date;
