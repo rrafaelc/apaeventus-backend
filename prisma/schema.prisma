@@ -28,4 +28,33 @@ model User {
   role         Role     @default(USER)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+
+  userTickets UserTicket[]
+}
+
+model Ticket {
+  id          String   @id @default(uuid())
+  title       String
+  description String
+  imageUrl    String?
+  expiresAt   DateTime
+  quantity    Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  userTickets UserTicket[]
+}
+
+model UserTicket {
+  id        String   @id @default(uuid())
+  userId    String
+  ticketId  String
+  qrCode    String
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user   User   @relation(fields: [userId], references: [id])
+  ticket Ticket @relation(fields: [ticketId], references: [id])
+
+  @@unique([userId, ticketId]) // Um ticket por usuário (remova se quiser múltiplos iguais)
 }
