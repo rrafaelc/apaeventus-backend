@@ -125,7 +125,7 @@ export class AuthService {
     }
   }
 
-  async revokeRefreshToken(userId?: number) {
+  async revokeRefreshToken(userId?: string) {
     await this.prismaService.user.update({
       where: { id: userId },
       data: { refreshToken: null },

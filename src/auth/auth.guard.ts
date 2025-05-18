@@ -10,7 +10,7 @@ import { JwtConstants } from './constants';
 import { TokenPayloadDto } from './dtos/token.dto';
 
 interface AuthenticatedRequest extends Request {
-  userId?: number;
+  userId?: string;
 }
 
 @Injectable()

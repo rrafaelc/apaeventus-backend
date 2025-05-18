@@ -47,6 +47,6 @@ export class AuthController {
   ): Promise<void> {
     const user = req.user;
     console.log(user);
-    await this.authService.revokeRefreshToken(0);
+    await this.authService.revokeRefreshToken('');
   }
 }

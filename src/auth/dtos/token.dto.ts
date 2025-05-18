@@ -1,9 +1,9 @@
 export interface TokenPayloadDto {
-  id: number;
+  id: string;
   email: string;
   name: string;
 }
 
 export interface RefreshTokenPayload {
-  id: number;
+  id: string;
 }
