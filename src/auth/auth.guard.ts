@@ -5,17 +5,20 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { CustomRequest } from 'src/interfaces/custom-request.interface';
-import { User } from 'src/user/entities/user';
+import { Request } from 'express';
 import { JwtConstants } from './constants';
-import { TokenPayload } from './dtos/token.dto';
+import { TokenPayloadDto } from './dtos/token.dto';
+
+interface AuthenticatedRequest extends Request {
+  userId?: number;
+}
 
 @Injectable()
 export class AuthGuard implements CanActivate {
   constructor(private readonly jwtService: JwtService) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const request = context.switchToHttp().getRequest<CustomRequest>();
+    const request = context.switchToHttp().getRequest<AuthenticatedRequest>();
 
     const token = this.extractTokenFromHeader(request);
 
@@ -24,11 +27,14 @@ export class AuthGuard implements CanActivate {
     }
 
     try {
-      const payload = await this.jwtService.verifyAsync<TokenPayload>(token, {
-        secret: JwtConstants.secret,
-      });
+      const payload = await this.jwtService.verifyAsync<TokenPayloadDto>(
+        token,
+        {
+          secret: JwtConstants.secret,
+        },
+      );
 
-      request.user = payload as User;
+      request.userId = payload.id;
     } catch {
       throw new UnauthorizedException('Invalid access token');
     }
@@ -36,7 +42,7 @@ export class AuthGuard implements CanActivate {
     return true;
   }
 
-  private extractTokenFromHeader(request: CustomRequest): string | undefined {
+  private extractTokenFromHeader(request: Request): string | undefined {
     const authorizationHeader = request.headers['authorization'] as string;
 
     if (authorizationHeader && typeof authorizationHeader === 'string') {

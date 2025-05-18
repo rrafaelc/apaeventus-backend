@@ -1,9 +1,11 @@
-export class User {
+import { Role } from 'generated/prisma';
+
+export class UserResponseDto {
   id: number;
   email: string;
   name: string;
-  password: string;
   refreshToken: string | null;
+  role: Role;
   createdAt: Date;
   updatedAt: Date;
 }

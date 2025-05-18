@@ -1,10 +1,11 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
-import { UserDTO } from 'src/user/dtos/user';
+import { UserResponseDto } from 'src/user/dtos/user.response.dto';
 import { PrismaService } from '../prisma/prisma.service';
-import { SignInDTO, SignUpDTO } from './dtos/auth.dto';
-import { LoginResponseDTO } from './dtos/loginResponse.dto';
+import { LoginResponseDto } from './dtos/login-response.dto';
+import { SignInDto } from './dtos/sign-in.dto';
+import { SignUpDto } from './dtos/sign-up.dto';
 import { RefreshTokenPayload } from './dtos/token.dto';
 
 const JwtConstants = {
@@ -18,7 +19,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
-  async signUp(data: SignUpDTO): Promise<UserDTO> {
+  async signUp(data: SignUpDto): Promise<UserResponseDto> {
     const userAlreadyExists = await this.prismaService.user.findUnique({
       where: {
         email: data.email,
@@ -43,12 +44,13 @@ export class AuthService {
       email: user.email,
       name: user.name,
       refreshToken: user.refreshToken,
+      role: user.role,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
     };
   }
 
-  async signIn(data: SignInDTO): Promise<LoginResponseDTO> {
+  async signIn(data: SignInDto): Promise<LoginResponseDto> {
     const user = await this.prismaService.user.findUnique({
       where: { email: data.email },
     });
@@ -87,6 +89,7 @@ export class AuthService {
         email: user.email,
         name: user.name,
         refreshToken: user.refreshToken,
+        role: user.role,
         createdAt: user.createdAt,
         updatedAt: user.updatedAt,
       },
@@ -122,7 +125,7 @@ export class AuthService {
     }
   }
 
-  async revokeRefreshToken(userId: number) {
+  async revokeRefreshToken(userId?: number) {
     await this.prismaService.user.update({
       where: { id: userId },
       data: { refreshToken: null },

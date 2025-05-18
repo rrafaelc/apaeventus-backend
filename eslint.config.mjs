@@ -31,6 +31,8 @@ export default tseslint.config(
       '@typescript-eslint/no-unsafe-argument': 'off',
       '@typescript-eslint/no-unsafe-assignment': 'off',
       'eslint-disable @typescript-eslint/no-unsafe-call': 'off',
+      'eslint-disable-next-line @typescript-eslint/no-unsafe-member-access':
+        'off',
     },
   },
 );
