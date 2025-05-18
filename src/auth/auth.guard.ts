@@ -5,10 +5,10 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { CustomRequest } from 'src/global/interfaces/custom-request.interface';
+import { CustomRequest } from 'src/interfaces/custom-request.interface';
 import { User } from 'src/user/entities/user';
 import { JwtConstants } from './constants';
-import { TokenPayload } from './dtos/token';
+import { TokenPayload } from './dtos/token.dto';
 
 @Injectable()
 export class AuthGuard implements CanActivate {

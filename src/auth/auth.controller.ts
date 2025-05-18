@@ -7,11 +7,11 @@ import {
   Request,
   UseGuards,
 } from '@nestjs/common';
-import { CustomRequest } from 'src/global/interfaces/custom-request.interface';
+import { CustomRequest } from 'src/interfaces/custom-request.interface';
 import { AuthGuard } from './auth.guard';
 import { AuthService } from './auth.service';
-import { SignInDTO, SignUpDTO } from './dtos/auth';
-import { RefreshTokenRequest } from './dtos/token';
+import { SignInDTO, SignUpDTO } from './dtos/auth.dto';
+import { RefreshTokenRequest } from './dtos/token.dto';
 
 @Controller('auth')
 export class AuthController {

@@ -3,9 +3,9 @@ import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { UserDTO } from 'src/user/dtos/user';
 import { PrismaService } from '../prisma/prisma.service';
-import { SignInDTO, SignUpDTO } from './dtos/auth';
-import { LoginResponseDTO } from './dtos/loginResponse';
-import { RefreshTokenPayload } from './dtos/token';
+import { SignInDTO, SignUpDTO } from './dtos/auth.dto';
+import { LoginResponseDTO } from './dtos/loginResponse.dto';
+import { RefreshTokenPayload } from './dtos/token.dto';
 
 const JwtConstants = {
   refreshSecret: 'your-refresh-token-secret',
