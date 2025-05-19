@@ -1,26 +1,109 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
+import * as bcrypt from 'bcrypt';
+import { User } from 'generated/prisma';
+import { PrismaService } from 'src/database/prisma.service';
 import { CreateUserDto } from './dtos/create-user.dto';
+import { FindUserByEmailDto } from './dtos/find-user-by-email.dto';
+import { FindUserByIdDto } from './dtos/find-user-by-id.dto';
+import { UpdateUserRoleDto } from './dtos/update-user-role.dto';
 import { UpdateUserDto } from './dtos/update-user.dto';
+import { UserResponseDto } from './dtos/user.response.dto';
+import { IUserService } from './interfaces/IUserService';
 
 @Injectable()
-export class UserService {
-  create(createUserDto: CreateUserDto) {
-    return 'This action adds a new user';
+export class UserService implements IUserService {
+  constructor(private readonly prisma: PrismaService) {}
+
+  async create({
+    name,
+    email,
+    password,
+  }: CreateUserDto): Promise<UserResponseDto> {
+    const userAlreadyExists = await this.prisma.user.findUnique({
+      where: {
+        email,
+      },
+    });
+
+    if (userAlreadyExists) {
+      throw new UnauthorizedException('User already exists');
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const user = await this.prisma.user.create({
+      data: {
+        name,
+        email,
+        password: hashedPassword,
+      },
+    });
+
+    return {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      refreshToken: user.refreshToken,
+      role: user.role,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+    };
   }
 
-  findAll() {
-    return `This action returns all user`;
+  findAll(): Promise<User[]> {
+    throw new Error('Method not implemented.');
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
+  async findById({ id }: FindUserByIdDto): Promise<User | null> {
+    const user = await this.prisma.user.findUnique({
+      where: { id },
+    });
+
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    return user;
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
+  async findByEmail({ email }: FindUserByEmailDto): Promise<User | null> {
+    const user = await this.prisma.user.findUnique({
+      where: { email },
+    });
+
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    return user;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} user`;
+  async update({ id, ...data }: UpdateUserDto): Promise<UserResponseDto> {
+    const user = await this.prisma.user.update({
+      where: { id },
+      data,
+    });
+
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    return {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      refreshToken: user.refreshToken,
+      role: user.role,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+    };
+  }
+
+  updateRole(updateUserRoleDto: UpdateUserRoleDto): Promise<UserResponseDto> {
+    throw new Error('Method not implemented.');
+  }
+
+  delete(id: string): Promise<void> {
+    throw new Error('Method not implemented.');
   }
 }

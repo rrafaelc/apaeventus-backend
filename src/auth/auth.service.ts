@@ -1,84 +1,40 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
-import { UserResponseDto } from 'src/user/dtos/user.response.dto';
-import { PrismaService } from '../prisma/prisma.service';
+import { TokenService } from 'src/token/token.service';
+import { UserService } from 'src/user/user.service';
+import { PrismaService } from '../database/prisma.service';
+import { AccessTokenResponseDto } from './dtos/access-token-response.dto';
 import { LoginResponseDto } from './dtos/login-response.dto';
 import { SignInDto } from './dtos/sign-in.dto';
-import { SignUpDto } from './dtos/sign-up.dto';
-import { RefreshTokenPayload } from './dtos/token.dto';
-
-const JwtConstants = {
-  refreshSecret: 'your-refresh-token-secret',
-};
+import { IAuthService } from './interfaces/IAuthService';
 
 @Injectable()
-export class AuthService {
+export class AuthService implements IAuthService {
   constructor(
-    private readonly prismaService: PrismaService,
-    private readonly jwtService: JwtService,
+    private readonly prisma: PrismaService,
+    private readonly userService: UserService,
+    private readonly tokenService: TokenService,
   ) {}
 
-  async signUp(data: SignUpDto): Promise<UserResponseDto> {
-    const userAlreadyExists = await this.prismaService.user.findUnique({
-      where: {
-        email: data.email,
-      },
-    });
-
-    if (userAlreadyExists) {
-      throw new UnauthorizedException('User already exists');
-    }
-
-    const hashedPassword = await bcrypt.hash(data.password, 10);
-
-    const user = await this.prismaService.user.create({
-      data: {
-        ...data,
-        password: hashedPassword,
-      },
-    });
-
-    return {
-      id: user.id,
-      email: user.email,
-      name: user.name,
-      refreshToken: user.refreshToken,
-      role: user.role,
-      createdAt: user.createdAt,
-      updatedAt: user.updatedAt,
-    };
-  }
-
-  async signIn(data: SignInDto): Promise<LoginResponseDto> {
-    const user = await this.prismaService.user.findUnique({
-      where: { email: data.email },
-    });
+  async signIn({ email, password }: SignInDto): Promise<LoginResponseDto> {
+    const user = await this.userService.findByEmail({ email });
 
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    const passwordMatch = await bcrypt.compare(data.password, user.password);
+    const passwordMatch = await bcrypt.compare(password, user.password);
 
     if (!passwordMatch) {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    const accessToken = await this.jwtService.signAsync({
+    const accessToken = await this.tokenService.generateAccessToken(user.id);
+    const refreshToken = await this.tokenService.generateRefreshToken(user.id);
+
+    await this.userService.update({
       id: user.id,
-      email: user.email,
-      name: user.name,
-    });
-
-    const refreshToken = await this.jwtService.signAsync(
-      { id: user.id },
-      { secret: JwtConstants.refreshSecret, expiresIn: '7d' },
-    );
-
-    await this.prismaService.user.update({
-      where: { id: user.id },
-      data: { refreshToken },
+      refreshToken,
     });
 
     return {
@@ -96,39 +52,32 @@ export class AuthService {
     };
   }
 
-  async refreshAccessToken(refreshToken: string) {
+  async refreshAccessToken(
+    refreshToken: string,
+  ): Promise<AccessTokenResponseDto> {
     try {
-      const payload = await this.jwtService.verifyAsync<RefreshTokenPayload>(
-        refreshToken,
-        {
-          secret: JwtConstants.refreshSecret,
-        },
-      );
+      const payload = await this.tokenService.verifyRefreshToken(refreshToken);
+      const id = payload.id;
 
-      const user = await this.prismaService.user.findUnique({
-        where: { id: payload.id },
-      });
+      const user = await this.userService.findById({ id });
 
       if (!user || user.refreshToken !== refreshToken) {
         throw new UnauthorizedException('Invalid refresh token');
       }
 
-      const newAccessToken = await this.jwtService.signAsync({
-        id: user.id,
-        email: user.email,
-        name: user.name,
-      });
+      const newAccessToken = await this.tokenService.generateAccessToken(
+        user.id,
+      );
 
-      return { accessToken: newAccessToken };
+      return {
+        accessToken: newAccessToken,
+      };
     } catch {
       throw new UnauthorizedException('Invalid refresh token');
     }
   }
 
-  async revokeRefreshToken(userId?: string) {
-    await this.prismaService.user.update({
-      where: { id: userId },
-      data: { refreshToken: null },
-    });
+  async revokeRefreshToken(userId: string): Promise<void> {
+    await this.tokenService.revokeRefreshToken(userId);
   }
 }
