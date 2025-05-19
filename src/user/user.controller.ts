@@ -3,6 +3,8 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
+  HttpStatus,
   Param,
   Patch,
   Post,
@@ -27,6 +29,7 @@ export class UserController {
     return this.userService.create(createUserRequest);
   }
 
+  @HttpCode(HttpStatus.OK)
   @Patch()
   update(@Body() updateUserDto: UpdateUserDto): Promise<UserResponseDto> {
     return this.userService.update(updateUserDto);
@@ -38,8 +41,15 @@ export class UserController {
   }
 
   @UseGuards(AuthGuard)
+  @HttpCode(HttpStatus.OK)
   @Get('profile')
-  me(@Request() { userId }: AuthenticatedRequest): string {
-    return userId as string;
+  async profile(
+    @Request() { userId }: AuthenticatedRequest,
+  ): Promise<UserResponseDto> {
+    if (!userId) {
+      throw new Error('UserId not found in request');
+    }
+
+    return this.userService.getProfile(userId);
   }
 }

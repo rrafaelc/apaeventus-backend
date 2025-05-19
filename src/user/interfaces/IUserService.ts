@@ -14,4 +14,5 @@ export interface IUserService {
   update(updateUserDto: UpdateUserDto): Promise<UserResponseDto>;
   updateRole(updateUserRoleDto: UpdateUserRoleDto): Promise<UserResponseDto>;
   delete(id: string): Promise<void>;
+  getProfile(id: string): Promise<UserResponseDto>;
 }

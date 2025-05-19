@@ -43,10 +43,10 @@ export class UserService implements IUserService {
       id: user.id,
       email: user.email,
       name: user.name,
-      refreshToken: user.refreshToken,
       role: user.role,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
+      refreshToken: user.refreshToken,
     };
   }
 
@@ -92,10 +92,10 @@ export class UserService implements IUserService {
       id: user.id,
       email: user.email,
       name: user.name,
-      refreshToken: user.refreshToken,
       role: user.role,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
+      refreshToken: user.refreshToken,
     };
   }
 
@@ -105,5 +105,23 @@ export class UserService implements IUserService {
 
   delete(id: string): Promise<void> {
     throw new Error('Method not implemented.');
+  }
+
+  async getProfile(id: string): Promise<UserResponseDto> {
+    const user = await this.findById({ id });
+
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    return {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      role: user.role,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+      refreshToken: user.refreshToken,
+    };
   }
 }
