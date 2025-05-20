@@ -30,15 +30,19 @@ export class UserService implements IUserService {
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const userCount = await this.prisma.user.count();
+    const user = await this.prisma.$transaction(async (prisma) => {
+      const adminExists = await prisma.user.findFirst({
+        where: { role: Role.ADMIN },
+      });
 
-    const user = await this.prisma.user.create({
-      data: {
-        name,
-        email,
-        password: hashedPassword,
-        role: !userCount ? Role.ADMIN : Role.USER,
-      },
+      return prisma.user.create({
+        data: {
+          name,
+          email,
+          password: hashedPassword,
+          role: adminExists ? Role.USER : Role.ADMIN,
+        },
+      });
     });
 
     return {
