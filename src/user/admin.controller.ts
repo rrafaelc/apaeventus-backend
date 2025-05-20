@@ -1,10 +1,10 @@
 import {
-  BadRequestException,
   Controller,
   Get,
   HttpCode,
   HttpStatus,
   Request,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { Role } from 'generated/prisma';
 import { AuthenticatedRequest } from 'src/auth/requests/authenticated-request';
@@ -19,7 +19,7 @@ export class AdminController {
   @Get('test')
   test(@Request() { userId }: AuthenticatedRequest): string {
     if (!userId) {
-      throw new BadRequestException('UserId not found in request');
+      throw new UnauthorizedException('UserId not found in request');
     }
 
     return `Only admin can see this: Id ${userId}`;
