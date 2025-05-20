@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { User } from 'generated/prisma';
 import { UserService } from 'src/user/user.service';
 import { JwtConstants } from './constants/constants';
 import { TokenDto } from './dtos/token.dto';
@@ -12,9 +13,12 @@ export class TokenService implements ITokenService {
     private readonly userService: UserService,
   ) {}
 
-  generateAccessToken(userId: string): Promise<string> {
+  async generateAccessToken(user: User): Promise<string> {
     return this.jwtService.signAsync(
-      { id: userId },
+      {
+        id: user.id,
+        role: user.role,
+      },
       {
         secret: JwtConstants.secret,
         expiresIn: JwtConstants.expiresIn,
@@ -22,9 +26,12 @@ export class TokenService implements ITokenService {
     );
   }
 
-  generateRefreshToken(userId: string): Promise<string> {
+  generateRefreshToken(user: User): Promise<string> {
     return this.jwtService.signAsync(
-      { id: userId },
+      {
+        id: user.id,
+        role: user.role,
+      },
       {
         secret: JwtConstants.refreshSecret,
         expiresIn: JwtConstants.refreshExpiresIn,
@@ -32,13 +39,13 @@ export class TokenService implements ITokenService {
     );
   }
 
-  verifyAccessToken(token: string): Promise<TokenDto> {
-    return this.jwtService.verifyAsync(token, {
+  async verifyAccessToken(token: string): Promise<TokenDto> {
+    return this.jwtService.verifyAsync<TokenDto>(token, {
       secret: JwtConstants.secret,
     });
   }
 
-  verifyRefreshToken(token: string): Promise<TokenDto> {
+  async verifyRefreshToken(token: string): Promise<TokenDto> {
     return this.jwtService.verifyAsync(token, {
       secret: JwtConstants.refreshSecret,
     });

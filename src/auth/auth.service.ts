@@ -29,8 +29,8 @@ export class AuthService implements IAuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    const accessToken = await this.tokenService.generateAccessToken(user.id);
-    const refreshToken = await this.tokenService.generateRefreshToken(user.id);
+    const accessToken = await this.tokenService.generateAccessToken(user);
+    const refreshToken = await this.tokenService.generateRefreshToken(user);
 
     await this.userService.update({
       id: user.id,
@@ -65,9 +65,7 @@ export class AuthService implements IAuthService {
         throw new UnauthorizedException('Invalid refresh token');
       }
 
-      const newAccessToken = await this.tokenService.generateAccessToken(
-        user.id,
-      );
+      const newAccessToken = await this.tokenService.generateAccessToken(user);
 
       return {
         accessToken: newAccessToken,
