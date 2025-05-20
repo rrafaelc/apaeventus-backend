@@ -7,11 +7,11 @@ import {
   Request,
   UseGuards,
 } from '@nestjs/common';
-import { AuthGuard } from './auth.guard';
 import { AuthService } from './auth.service';
 import { AccessTokenResponseDto } from './dtos/access-token-response.dto';
 import { LoginResponseDto } from './dtos/login-response.dto';
 import { SignInDto } from './dtos/sign-in.dto';
+import { AuthGuard } from './guards/auth.guard';
 import { AuthenticatedRequest } from './requests/authenticated-request';
 import { RefreshTokenRequest } from './requests/refresh-token.request';
 
