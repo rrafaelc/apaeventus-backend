@@ -40,7 +40,7 @@ export class RolesGuard implements CanActivate {
       request.userId = payload.id;
       request.role = payload.role;
 
-      return requiredRoles.some((role) => request.role.includes(role));
+      return requiredRoles.some((role) => request.role === role);
     } catch {
       throw new UnauthorizedException('Invalid access token');
     }
