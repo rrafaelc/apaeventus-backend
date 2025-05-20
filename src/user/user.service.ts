@@ -1,6 +1,6 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
-import { User } from 'generated/prisma';
+import { Role, User } from 'generated/prisma';
 import { PrismaService } from 'src/database/prisma.service';
 import { CreateUserDto } from './dtos/create-user.dto';
 import { FindUserByEmailDto } from './dtos/find-user-by-email.dto';
@@ -30,13 +30,19 @@ export class UserService implements IUserService {
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
+    const user = await this.prisma.$transaction(async (prisma) => {
+      const adminExists = await prisma.user.findFirst({
+        where: { role: Role.ADMIN },
+      });
 
-    const user = await this.prisma.user.create({
-      data: {
-        name,
-        email,
-        password: hashedPassword,
-      },
+      return prisma.user.create({
+        data: {
+          name,
+          email,
+          password: hashedPassword,
+          role: adminExists ? Role.USER : Role.ADMIN,
+        },
+      });
     });
 
     return {
