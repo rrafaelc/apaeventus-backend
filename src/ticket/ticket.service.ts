@@ -31,14 +31,22 @@ export class TicketService implements ITicketService {
     return ticket;
   }
 
-  private validationExpiresAt(expiresAt: Date): void {
-    const now = new Date();
+  private validationExpiresAt(expiresAt: string): void {
+    try {
+      const now = new Date();
 
-    const oneDayFromNow = dayjs(now).add(1, 'day').toDate();
+      const oneDayFromNow = dayjs(now).add(1, 'day').toDate();
 
-    if (new Date(expiresAt) < oneDayFromNow) {
+      if (new Date(expiresAt) < oneDayFromNow) {
+        throw new BadRequestException(
+          'Expiration date must be at least 1 day in the future',
+        );
+      }
+    } catch (error) {
       throw new BadRequestException(
-        'Expiration date must be at least 1 day in the future',
+        typeof error === 'object' && error !== null && 'message' in error
+          ? (error as { message: string }).message
+          : 'Invalid expiration date',
       );
     }
   }
