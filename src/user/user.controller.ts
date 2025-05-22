@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -47,7 +48,7 @@ export class UserController {
     @Request() { userId }: AuthenticatedRequest,
   ): Promise<UserResponseDto> {
     if (!userId) {
-      throw new Error('UserId not found in request');
+      throw new BadRequestException('UserId not found in request');
     }
 
     return this.userService.getProfile(userId);
