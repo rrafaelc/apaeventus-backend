@@ -60,27 +60,18 @@ model Ticket {
 }
 
 model TicketSale {
-  id         Int      @id @default(autoincrement())
-  sellerId   Int
-  customerId Int
-  ticketId   Int
-  used       Boolean  @default(false)
-  createdAt  DateTime @default(now())
+  id           Int      @id @default(autoincrement())
+  sellerId     Int
+  customerId   Int
+  ticketId     Int
+  used         Boolean  @default(false)
+  pdfUrl       String?
+  qrCodeUrl    String?
+  qrCodeBase64 String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   seller   User   @relation("SellerSales", fields: [sellerId], references: [id])
   customer User   @relation("CustomerPurchases", fields: [customerId], references: [id])
   ticket   Ticket @relation(fields: [ticketId], references: [id])
-
-  CustomerTicketPDF CustomerTicketPDF?
-}
-
-model CustomerTicketPDF {
-  id           Int      @id @default(autoincrement())
-  ticketSaleId Int
-  pdfUrl       String
-  createdAt    DateTime @default(now())
-
-  ticketSale TicketSale @relation(fields: [ticketSaleId], references: [id])
-
-  @@unique([ticketSaleId])
 }

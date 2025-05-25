@@ -34,6 +34,9 @@
     "class-validator": "^0.14.2",
     "cpf-cnpj-validator": "^1.0.3",
     "dayjs": "^1.11.13",
+    "libphonenumber-js": "^1.12.8",
+    "pdf-lib": "^1.17.1",
+    "qrcode": "^1.5.4",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1"
   },
@@ -49,6 +52,7 @@
     "@types/express": "^5.0.0",
     "@types/jest": "^29.5.14",
     "@types/node": "^22.15.21",
+    "@types/qrcode": "^1.5.5",
     "@types/supertest": "^6.0.2",
     "eslint": "^9.18.0",
     "eslint-config-prettier": "^10.0.1",

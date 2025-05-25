@@ -5,7 +5,7 @@ import {
   Post,
   Request,
 } from '@nestjs/common';
-import { Role, TicketSale } from '@prisma/client';
+import { Role } from '@prisma/client';
 import { AuthenticatedRequest } from 'src/auth/requests/authenticated-request';
 import { Roles } from 'src/user/decorators/roles.decorator';
 import { CreateSaleRequest } from './requests/create-sale.request';
@@ -20,13 +20,14 @@ export class SaleController {
   create(
     @Request() { userId }: AuthenticatedRequest,
     @Body() createSaleRequest: CreateSaleRequest,
-  ): Promise<TicketSale> {
+  ): Promise<void> {
     if (!userId) throw new BadRequestException(['UserId not found in request']);
 
     return this.saleService.create({
       ticketId: createSaleRequest.ticketId,
       sellerId: userId,
       customerId: createSaleRequest.customerId,
+      quantity: createSaleRequest.quantity,
     });
   }
 }

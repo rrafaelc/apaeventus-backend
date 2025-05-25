@@ -55,19 +55,13 @@ CREATE TABLE "TicketSale" (
     "customerId" INTEGER NOT NULL,
     "ticketId" INTEGER NOT NULL,
     "used" BOOLEAN NOT NULL DEFAULT false,
+    "pdfUrl" TEXT,
+    "qrCodeUrl" TEXT,
+    "qrCodeBase64" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "TicketSale_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "CustomerTicketPDF" (
-    "id" SERIAL NOT NULL,
-    "ticketSaleId" INTEGER NOT NULL,
-    "pdfUrl" TEXT NOT NULL,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    CONSTRAINT "CustomerTicketPDF_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateIndex
@@ -75,9 +69,6 @@ CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "User_cpf_key" ON "User"("cpf");
-
--- CreateIndex
-CREATE UNIQUE INDEX "CustomerTicketPDF_ticketSaleId_key" ON "CustomerTicketPDF"("ticketSaleId");
 
 -- AddForeignKey
 ALTER TABLE "Address" ADD CONSTRAINT "Address_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -90,6 +81,3 @@ ALTER TABLE "TicketSale" ADD CONSTRAINT "TicketSale_customerId_fkey" FOREIGN KEY
 
 -- AddForeignKey
 ALTER TABLE "TicketSale" ADD CONSTRAINT "TicketSale_ticketId_fkey" FOREIGN KEY ("ticketId") REFERENCES "Ticket"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "CustomerTicketPDF" ADD CONSTRAINT "CustomerTicketPDF_ticketSaleId_fkey" FOREIGN KEY ("ticketSaleId") REFERENCES "TicketSale"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

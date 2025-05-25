@@ -51,4 +51,13 @@ export class UserController {
 
     return this.userService.getProfile(userId);
   }
+
+  // @UseGuards(AuthGuard)
+  // async findUserTickets(
+  //   @Request() { userId }: AuthenticatedRequest,
+  // ): Promise<any> {
+  //   if (!userId) throw new BadRequestException(['UserId not found in request']);
+
+  //   return this.userService.findUserTickets(userId);
+  // }
 }

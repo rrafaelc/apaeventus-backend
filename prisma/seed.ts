@@ -24,8 +24,9 @@ async function main() {
     where: { id: 1 },
     update: {},
     create: {
-      title: 'Feijoada do Bem',
-      description: 'A feijoada mais gostosa do Brasil',
+      title: '1ª TARDE ROCK',
+      description:
+        'Nossa primeira edição da Tarde Rock em prol a Apae de Itapira',
       imageUrl: null,
       expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // Expires in 30 days
       quantity: 100,
@@ -56,8 +57,9 @@ async function main() {
     where: { id: 3 },
     update: {},
     create: {
-      title: 'Festival de Inverno',
-      description: 'O melhor festival de inverno do Brasil',
+      title: '1ª QUEIMA DO ALHO',
+      description:
+        'Primeira edição da Queima do Alho juntamente com a tradicional Cavalgada e Passeio de Jeep',
       imageUrl: null,
       expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // Expires in 30 days
       quantity: 200,
