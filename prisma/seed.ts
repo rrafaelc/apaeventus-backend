@@ -30,6 +30,7 @@ async function main() {
       expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // Expires in 30 days
       quantity: 100,
       price: 30.0,
+      isActive: true,
       createdAt: new Date(),
       updatedAt: new Date(),
     },
@@ -45,6 +46,7 @@ async function main() {
       expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // Expires in 30 days
       quantity: 500,
       price: 100.0,
+      isActive: true,
       createdAt: new Date(),
       updatedAt: new Date(),
     },
@@ -60,6 +62,7 @@ async function main() {
       expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // Expires in 30 days
       quantity: 200,
       price: 100.0,
+      isActive: true,
       createdAt: new Date(),
       updatedAt: new Date(),
     },
