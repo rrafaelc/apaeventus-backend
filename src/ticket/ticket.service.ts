@@ -3,6 +3,7 @@ import { Ticket } from '@prisma/client';
 import * as dayjs from 'dayjs';
 import { PrismaService } from 'src/database/prisma.service';
 import { CreateTicketDto } from './dtos/create-ticket.dto';
+import { EnableDisableTicketDto } from './dtos/enable-disable-ticket.dto';
 import { ITicketService } from './interfaces/ITicketService';
 
 @Injectable()
@@ -13,6 +14,36 @@ export class TicketService implements ITicketService {
     this.validationExpiresAt(data.expiresAt);
 
     const ticket = await this.prisma.ticket.create({ data });
+
+    return ticket;
+  }
+
+  async findAll(): Promise<Ticket[]> {
+    return this.prisma.ticket.findMany({
+      where: {
+        isActive: true,
+      },
+    });
+  }
+
+  async findById(id: number): Promise<Ticket | null> {
+    return this.prisma.ticket.findUnique({
+      where: { id },
+    });
+  }
+
+  async enableDisableTicket({
+    id,
+    isActive,
+  }: EnableDisableTicketDto): Promise<Ticket> {
+    const ticketExists = await this.findById(id);
+
+    if (!ticketExists) throw new BadRequestException(['Ticket not found']);
+
+    const ticket = await this.prisma.ticket.update({
+      where: { id },
+      data: { isActive },
+    });
 
     return ticket;
   }

@@ -1,16 +1,23 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Get, Post } from '@nestjs/common';
 import { Role, Ticket } from '@prisma/client';
 import { Roles } from 'src/user/decorators/roles.decorator';
-import { CreateTicketRequest } from './requests/create-ticket-request';
+import { EnableDisableTicketRequest } from './requests/enable-disable-ticket.request';
 import { TicketService } from './ticket.service';
 
 @Controller('ticket')
 export class TicketController {
   constructor(private readonly ticketService: TicketService) {}
 
+  @Get()
+  findAll(): Promise<Ticket[]> {
+    return this.ticketService.findAll();
+  }
+
   @Roles(Role.ADMIN)
-  @Post()
-  create(@Body() createTicketRequest: CreateTicketRequest): Promise<Ticket> {
-    return this.ticketService.create(createTicketRequest);
+  @Post('enable-disable')
+  enableDisableTicket(
+    @Body() enableDisableTicketRequest: EnableDisableTicketRequest,
+  ): Promise<Ticket> {
+    return this.ticketService.enableDisableTicket(enableDisableTicketRequest);
   }
 }
