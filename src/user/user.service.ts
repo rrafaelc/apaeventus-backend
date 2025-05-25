@@ -7,8 +7,6 @@ import { Address, User } from '@prisma/client';
 import { cpf } from 'cpf-cnpj-validator';
 import { PrismaService } from 'src/database/prisma.service';
 import { CreateUserDto } from './dtos/create-user.dto';
-import { FindUserByEmailDto } from './dtos/find-user-by-email.dto';
-import { FindUserByIdDto } from './dtos/find-user-by-id.dto';
 import { UpdateUserDto } from './dtos/update-user.dto';
 import { UserResponseDto } from './dtos/user.response.dto';
 import { IUserService } from './interfaces/IUserService';
@@ -89,13 +87,13 @@ export class UserService implements IUserService {
     });
   }
 
-  async findById({ id }: FindUserByIdDto): Promise<User | null> {
+  async findById(id: number): Promise<User | null> {
     return this.prisma.user.findUnique({
       where: { id },
     });
   }
 
-  async findByEmail({ email }: FindUserByEmailDto): Promise<User | null> {
+  async findByEmail(email: string): Promise<User | null> {
     return this.prisma.user.findUnique({
       where: { email },
     });
@@ -136,7 +134,7 @@ export class UserService implements IUserService {
   }
 
   async getProfile(id: number): Promise<UserResponseDto> {
-    const user = await this.findById({ id });
+    const user = await this.findById(id);
 
     if (!user) {
       throw new UnauthorizedException(['User not found']);

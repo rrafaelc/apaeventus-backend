@@ -8,6 +8,7 @@ import {
 } from '@nestjs/common';
 import { Role, Ticket } from '@prisma/client';
 import { Roles } from 'src/user/decorators/roles.decorator';
+import { TicketResponseDto } from './dtos/ticket-response.dto';
 import { EnableDisableTicketRequest } from './requests/enable-disable-ticket.request';
 import { TicketService } from './ticket.service';
 
@@ -16,7 +17,7 @@ export class TicketController {
   constructor(private readonly ticketService: TicketService) {}
 
   @Get()
-  findAll(): Promise<Ticket[]> {
+  findAll(): Promise<TicketResponseDto[]> {
     return this.ticketService.findAll();
   }
 

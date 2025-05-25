@@ -4,6 +4,7 @@ import * as dayjs from 'dayjs';
 import { PrismaService } from 'src/database/prisma.service';
 import { CreateTicketDto } from './dtos/create-ticket.dto';
 import { EnableDisableTicketDto } from './dtos/enable-disable-ticket.dto';
+import { TicketResponseDto } from './dtos/ticket-response.dto';
 import { ITicketService } from './interfaces/ITicketService';
 
 @Injectable()
@@ -18,12 +19,26 @@ export class TicketService implements ITicketService {
     return ticket;
   }
 
-  async findAll(): Promise<Ticket[]> {
-    return this.prisma.ticket.findMany({
+  async findAll(): Promise<TicketResponseDto[]> {
+    const tickets = await this.prisma.ticket.findMany({
       where: {
         isActive: true,
       },
     });
+
+    // For each ticket, count the number of sold tickets
+    const ticketsWithSold = await Promise.all(
+      tickets.map(async (ticket) => {
+        const sold = await this.prisma.ticketSale.count({
+          where: { ticketId: ticket.id },
+        });
+        return { ...ticket, sold };
+      }),
+    );
+
+    return ticketsWithSold
+      .filter((ticket) => ticket.quantity > ticket.sold)
+      .sort((a, b) => b.sold - a.sold);
   }
 
   async findById(id: number): Promise<Ticket | null> {

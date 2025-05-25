@@ -16,7 +16,7 @@ export class AuthService implements IAuthService {
   ) {}
 
   async signIn({ email, password }: SignInDto): Promise<LoginResponseDto> {
-    const user = await this.userService.findByEmail({ email });
+    const user = await this.userService.findByEmail(email);
 
     if (!user) throw new UnauthorizedException(['Invalid credentials']);
 
@@ -73,7 +73,7 @@ export class AuthService implements IAuthService {
       const payload = await this.tokenService.verifyRefreshToken(refreshToken);
       const id = payload.id;
 
-      const user = await this.userService.findById({ id });
+      const user = await this.userService.findById(id);
 
       if (!user || user.refreshToken !== refreshToken) {
         throw new UnauthorizedException(['Invalid refresh token']);
@@ -94,7 +94,7 @@ export class AuthService implements IAuthService {
   }
 
   async firstAccess({ email, password }: FirstAccessDto): Promise<void> {
-    const user = await this.userService.findByEmail({ email });
+    const user = await this.userService.findByEmail(email);
 
     if (!user) throw new UnauthorizedException(['User not found']);
 
