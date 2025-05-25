@@ -12,8 +12,10 @@ import {
   Request,
   UseGuards,
 } from '@nestjs/common';
+import { Role } from '@prisma/client';
 import { AuthGuard } from 'src/auth/guards/auth.guard';
 import { AuthenticatedRequest } from 'src/auth/requests/authenticated-request';
+import { Roles } from './decorators/roles.decorator';
 import { UpdateUserDto } from './dtos/update-user.dto';
 import { UserResponseDto } from './dtos/user.response.dto';
 import { CreateUserRequest } from './requests/create-user.request';
@@ -23,6 +25,7 @@ import { UserService } from './user.service';
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
+  @Roles(Role.ADMIN, Role.SELLER)
   @Post()
   create(
     @Body() createUserRequest: CreateUserRequest,
@@ -37,7 +40,7 @@ export class UserController {
   }
 
   @Delete(':id')
-  delete(@Param('id') id: string): Promise<void> {
+  delete(@Param('id') id: number): Promise<void> {
     return this.userService.delete(id);
   }
 

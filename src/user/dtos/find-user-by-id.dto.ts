@@ -1,3 +1,3 @@
 export class FindUserByIdDto {
-  id: string;
+  id: number;
 }

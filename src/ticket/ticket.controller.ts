@@ -1,5 +1,5 @@
 import { Body, Controller, Post } from '@nestjs/common';
-import { Role, Ticket } from 'generated/prisma';
+import { Role, Ticket } from '@prisma/client';
 import { Roles } from 'src/user/decorators/roles.decorator';
 import { CreateTicketRequest } from './requests/create-ticket-request';
 import { TicketService } from './ticket.service';

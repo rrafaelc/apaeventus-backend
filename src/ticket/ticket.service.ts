@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
+import { Ticket } from '@prisma/client';
 import * as dayjs from 'dayjs';
-import { Ticket } from 'generated/prisma';
 import { PrismaService } from 'src/database/prisma.service';
 import { CreateTicketDto } from './dtos/create-ticket.dto';
 import { ITicketService } from './interfaces/ITicketService';
@@ -9,24 +9,10 @@ import { ITicketService } from './interfaces/ITicketService';
 export class TicketService implements ITicketService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create({
-    title,
-    description,
-    imageUrl,
-    expiresAt,
-    quantity,
-  }: CreateTicketDto): Promise<Ticket> {
-    this.validationExpiresAt(expiresAt);
+  async create(data: CreateTicketDto): Promise<Ticket> {
+    this.validationExpiresAt(data.expiresAt);
 
-    const ticket = await this.prisma.ticket.create({
-      data: {
-        title,
-        description,
-        imageUrl,
-        expiresAt,
-        quantity,
-      },
-    });
+    const ticket = await this.prisma.ticket.create({ data });
 
     return ticket;
   }

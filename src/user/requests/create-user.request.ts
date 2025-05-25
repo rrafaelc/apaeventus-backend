@@ -1,4 +1,11 @@
-import { IsEmail, IsNotEmpty, MinLength } from 'class-validator';
+import { Role } from '@prisma/client';
+import {
+  IsEmail,
+  IsEnum,
+  IsNotEmpty,
+  IsOptional,
+  MinLength,
+} from 'class-validator';
 
 export class CreateUserRequest {
   @IsNotEmpty()
@@ -9,6 +16,13 @@ export class CreateUserRequest {
   email: string;
 
   @IsNotEmpty()
-  @MinLength(8)
-  password: string;
+  rg: string;
+
+  @IsNotEmpty()
+  @MinLength(11)
+  cpf: string;
+
+  @IsOptional()
+  @IsEnum(Role)
+  role?: Role;
 }

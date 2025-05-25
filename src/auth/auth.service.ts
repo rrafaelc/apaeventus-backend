@@ -2,8 +2,8 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { TokenService } from 'src/token/token.service';
 import { UserService } from 'src/user/user.service';
-import { PrismaService } from '../database/prisma.service';
 import { AccessTokenResponseDto } from './dtos/access-token-response.dto';
+import { FirstAccessDto } from './dtos/first-access.dto';
 import { LoginResponseDto } from './dtos/login-response.dto';
 import { SignInDto } from './dtos/sign-in.dto';
 import { IAuthService } from './interfaces/IAuthService';
@@ -11,7 +11,6 @@ import { IAuthService } from './interfaces/IAuthService';
 @Injectable()
 export class AuthService implements IAuthService {
   constructor(
-    private readonly prisma: PrismaService,
     private readonly userService: UserService,
     private readonly tokenService: TokenService,
   ) {}
@@ -19,9 +18,9 @@ export class AuthService implements IAuthService {
   async signIn({ email, password }: SignInDto): Promise<LoginResponseDto> {
     const user = await this.userService.findByEmail({ email });
 
-    if (!user) {
-      throw new UnauthorizedException('Invalid credentials');
-    }
+    if (!user) throw new UnauthorizedException('Invalid credentials');
+
+    if (!user.password) throw new UnauthorizedException('Invalid credentials');
 
     const passwordMatch = await bcrypt.compare(password, user.password);
 
@@ -44,7 +43,7 @@ export class AuthService implements IAuthService {
         id: user.id,
         email: user.email,
         name: user.name,
-        refreshToken: user.refreshToken,
+        refreshToken,
         role: user.role,
         createdAt: user.createdAt,
         updatedAt: user.updatedAt,
@@ -75,7 +74,20 @@ export class AuthService implements IAuthService {
     }
   }
 
-  async revokeRefreshToken(userId: string): Promise<void> {
+  async revokeRefreshToken(userId: number): Promise<void> {
     await this.tokenService.revokeRefreshToken(userId);
+  }
+
+  async firstAccess({ email, password }: FirstAccessDto): Promise<void> {
+    const user = await this.userService.findByEmail({ email });
+
+    if (!user) throw new UnauthorizedException('User not found');
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    await this.userService.update({
+      id: user.id,
+      password: hashedPassword,
+    });
   }
 }

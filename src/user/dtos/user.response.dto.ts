@@ -1,7 +1,7 @@
-import { Role } from 'generated/prisma';
+import { Role } from '@prisma/client';
 
 export class UserResponseDto {
-  id: string;
+  id: number;
   email: string;
   name: string;
   role: Role;

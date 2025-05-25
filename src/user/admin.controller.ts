@@ -6,7 +6,7 @@ import {
   Request,
   UnauthorizedException,
 } from '@nestjs/common';
-import { Role } from 'generated/prisma';
+import { Role } from '@prisma/client';
 import { AuthenticatedRequest } from 'src/auth/requests/authenticated-request';
 import { Roles } from './decorators/roles.decorator';
 

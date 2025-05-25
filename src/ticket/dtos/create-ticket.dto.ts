@@ -4,4 +4,5 @@ export class CreateTicketDto {
   imageUrl?: string | null;
   expiresAt: string;
   quantity: number;
+  price: number;
 }

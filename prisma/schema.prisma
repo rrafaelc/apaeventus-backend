@@ -1,12 +1,5 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
-  output   = "../generated/prisma"
 }
 
 datasource db {
@@ -16,45 +9,62 @@ datasource db {
 
 enum Role {
   ADMIN
-  USER
+  SELLER
+  CUSTOMER
 }
 
 model User {
-  id           String   @id @default(uuid())
+  id           Int      @id @default(autoincrement())
   name         String
   email        String   @unique
-  password     String
+  password     String?
+  rg           String?
+  cpf          String?  @unique
   refreshToken String?
-  role         Role     @default(USER)
+  role         Role     @default(CUSTOMER)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  userTickets UserTicket[]
+  soldTickets   TicketSale[] @relation("SellerSales")
+  boughtTickets TicketSale[] @relation("CustomerPurchases")
 }
 
 model Ticket {
-  id          String   @id @default(uuid())
+  id          Int      @id @default(autoincrement())
   title       String
   description String
   imageUrl    String?
   expiresAt   DateTime
   quantity    Int
+  price       Float
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  userTickets UserTicket[]
+  sales TicketSale[]
 }
 
-model UserTicket {
-  id        String   @id @default(uuid())
-  userId    String
-  ticketId  String
-  qrCode    String
-  used      Boolean  @default(false)
-  createdAt DateTime @default(now())
+model TicketSale {
+  id         Int      @id @default(autoincrement())
+  sellerId   Int
+  customerId Int
+  ticketId   Int
+  used       Boolean  @default(false)
+  createdAt  DateTime @default(now())
 
-  user   User   @relation(fields: [userId], references: [id])
-  ticket Ticket @relation(fields: [ticketId], references: [id])
+  seller   User   @relation("SellerSales", fields: [sellerId], references: [id])
+  customer User   @relation("CustomerPurchases", fields: [customerId], references: [id])
+  ticket   Ticket @relation(fields: [ticketId], references: [id])
 
-  @@unique([userId, ticketId]) // Um ticket por usuário (remova se quiser múltiplos iguais)
+  CustomerTicketPDF CustomerTicketPDF?
+}
+
+model CustomerTicketPDF {
+  id           Int      @id @default(autoincrement())
+  ticketSaleId Int
+  pdfUrl       String
+  createdAt    DateTime @default(now())
+
+  ticketSale TicketSale @relation(fields: [ticketSaleId], references: [id])
+
+  @@unique([ticketSaleId])
 }

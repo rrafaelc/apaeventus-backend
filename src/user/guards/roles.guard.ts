@@ -5,7 +5,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { Role } from 'generated/prisma';
+import { Role } from '@prisma/client';
 import { AuthenticatedRequest } from 'src/auth/requests/authenticated-request';
 import { TokenService } from 'src/token/token.service';
 import { ROLES_KEY } from '../decorators/roles.decorator';

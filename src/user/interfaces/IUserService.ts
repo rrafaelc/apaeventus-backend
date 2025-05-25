@@ -1,4 +1,4 @@
-import { User } from 'generated/prisma';
+import { User } from '@prisma/client';
 import { CreateUserDto } from '../dtos/create-user.dto';
 import { FindUserByEmailDto } from '../dtos/find-user-by-email.dto';
 import { FindUserByIdDto } from '../dtos/find-user-by-id.dto';
@@ -13,6 +13,6 @@ export interface IUserService {
   findByEmail(findUserByEmailDto: FindUserByEmailDto): Promise<User | null>;
   update(updateUserDto: UpdateUserDto): Promise<UserResponseDto>;
   updateRole(updateUserRoleDto: UpdateUserRoleDto): Promise<UserResponseDto>;
-  delete(id: string): Promise<void>;
-  getProfile(id: string): Promise<UserResponseDto>;
+  delete(id: number): Promise<void>;
+  getProfile(id: number): Promise<UserResponseDto>;
 }

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { User } from 'generated/prisma';
+import { User } from '@prisma/client';
 import { UserService } from 'src/user/user.service';
 import { JwtConstants } from './constants/constants';
 import { TokenDto } from './dtos/token.dto';
@@ -51,7 +51,7 @@ export class TokenService implements ITokenService {
     });
   }
 
-  async revokeRefreshToken(userId: string): Promise<void> {
+  async revokeRefreshToken(userId: number): Promise<void> {
     await this.userService.update({
       id: userId,
       refreshToken: null,
@@ -63,10 +63,10 @@ export class TokenService implements ITokenService {
   }
 
   getUserIdFromAccessToken(token: string): Promise<string> {
-    throw new Error('Method not implemented.');
+    throw new Error('Method not implemented.' + token);
   }
 
   getUserIdFromRefreshToken(token: string): Promise<string> {
-    throw new Error('Method not implemented.');
+    throw new Error('Method not implemented.' + token);
   }
 }

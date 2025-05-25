@@ -1,6 +1,5 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
-import * as bcrypt from 'bcrypt';
-import { Role, User } from 'generated/prisma';
+import { User } from '@prisma/client';
 import { PrismaService } from 'src/database/prisma.service';
 import { CreateUserDto } from './dtos/create-user.dto';
 import { FindUserByEmailDto } from './dtos/find-user-by-email.dto';
@@ -14,36 +13,17 @@ import { IUserService } from './interfaces/IUserService';
 export class UserService implements IUserService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create({
-    name,
-    email,
-    password,
-  }: CreateUserDto): Promise<UserResponseDto> {
+  async create(data: CreateUserDto): Promise<UserResponseDto> {
     const userAlreadyExists = await this.prisma.user.findUnique({
       where: {
-        email,
+        email: data.email,
       },
     });
 
-    if (userAlreadyExists) {
+    if (userAlreadyExists)
       throw new UnauthorizedException('User already exists');
-    }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const user = await this.prisma.$transaction(async (prisma) => {
-      const adminExists = await prisma.user.findFirst({
-        where: { role: Role.ADMIN },
-      });
-
-      return prisma.user.create({
-        data: {
-          name,
-          email,
-          password: hashedPassword,
-          role: adminExists ? Role.USER : Role.ADMIN,
-        },
-      });
-    });
+    const user = await this.prisma.user.create({ data });
 
     return {
       id: user.id,
@@ -61,27 +41,15 @@ export class UserService implements IUserService {
   }
 
   async findById({ id }: FindUserByIdDto): Promise<User | null> {
-    const user = await this.prisma.user.findUnique({
+    return this.prisma.user.findUnique({
       where: { id },
     });
-
-    if (!user) {
-      throw new UnauthorizedException('User not found');
-    }
-
-    return user;
   }
 
   async findByEmail({ email }: FindUserByEmailDto): Promise<User | null> {
-    const user = await this.prisma.user.findUnique({
+    return this.prisma.user.findUnique({
       where: { email },
     });
-
-    if (!user) {
-      throw new UnauthorizedException('User not found');
-    }
-
-    return user;
   }
 
   async update({ id, ...data }: UpdateUserDto): Promise<UserResponseDto> {
@@ -106,14 +74,14 @@ export class UserService implements IUserService {
   }
 
   updateRole(updateUserRoleDto: UpdateUserRoleDto): Promise<UserResponseDto> {
-    throw new Error('Method not implemented.');
+    throw new Error('Method not implemented.' + updateUserRoleDto.id);
   }
 
-  delete(id: string): Promise<void> {
-    throw new Error('Method not implemented.');
+  delete(id: number): Promise<void> {
+    throw new Error('Method not implemented.' + id);
   }
 
-  async getProfile(id: string): Promise<UserResponseDto> {
+  async getProfile(id: number): Promise<UserResponseDto> {
     const user = await this.findById({ id });
 
     if (!user) {
