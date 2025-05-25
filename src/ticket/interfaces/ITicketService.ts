@@ -9,4 +9,6 @@ export interface ITicketService {
   enableDisableTicket(
     enableDisableTicketDto: EnableDisableTicketDto,
   ): Promise<Ticket>;
+  countSold(ticketId: number): Promise<number>;
+  countUsed(ticketId: number): Promise<number>;
 }

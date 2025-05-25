@@ -48,6 +48,29 @@ export class TicketService implements ITicketService {
     return ticket;
   }
 
+  async countSold(ticketId: number): Promise<number> {
+    const ticketExists = await this.findById(ticketId);
+
+    if (!ticketExists) throw new BadRequestException(['Ticket not found']);
+
+    return this.prisma.ticketSale.count({
+      where: { ticketId },
+    });
+  }
+
+  async countUsed(ticketId: number): Promise<number> {
+    const ticketExists = await this.findById(ticketId);
+
+    if (!ticketExists) throw new BadRequestException(['Ticket not found']);
+
+    return this.prisma.ticketSale.count({
+      where: {
+        ticketId,
+        used: true,
+      },
+    });
+  }
+
   private validationExpiresAt(expiresAt: string): void {
     try {
       const now = new Date();

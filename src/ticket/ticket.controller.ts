@@ -1,4 +1,11 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  ParseIntPipe,
+  Post,
+} from '@nestjs/common';
 import { Role, Ticket } from '@prisma/client';
 import { Roles } from 'src/user/decorators/roles.decorator';
 import { EnableDisableTicketRequest } from './requests/enable-disable-ticket.request';
@@ -19,5 +26,17 @@ export class TicketController {
     @Body() enableDisableTicketRequest: EnableDisableTicketRequest,
   ): Promise<Ticket> {
     return this.ticketService.enableDisableTicket(enableDisableTicketRequest);
+  }
+
+  @Roles(Role.ADMIN, Role.SELLER)
+  @Get(':id/count-sold')
+  countSold(@Param('id', ParseIntPipe) id: number): Promise<number> {
+    return this.ticketService.countSold(id);
+  }
+
+  @Roles(Role.ADMIN, Role.SELLER)
+  @Get(':id/count-used')
+  countUsed(@Param('id', ParseIntPipe) id: number): Promise<number> {
+    return this.ticketService.countUsed(id);
   }
 }
