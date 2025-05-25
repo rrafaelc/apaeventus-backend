@@ -37,6 +37,8 @@ export class AuthService implements IAuthService {
       refreshToken,
     });
 
+    const addresses = await this.userService.findAllUserAddresses(user.id);
+
     return {
       accessToken,
       refreshToken,
@@ -44,10 +46,22 @@ export class AuthService implements IAuthService {
         id: user.id,
         email: user.email,
         name: user.name,
-        refreshToken,
         role: user.role,
+        rg: user.rg,
+        cpf: user.cpf,
+        cellphone: user.cellphone,
+        refreshToken,
         createdAt: user.createdAt,
         updatedAt: user.updatedAt,
+        addresses: addresses.map((address) => ({
+          id: address.id,
+          street: address.street,
+          number: address.number,
+          neighborhood: address.neighborhood,
+          city: address.city,
+          state: address.state,
+          zipCode: address.zipCode,
+        })),
       },
     };
   }

@@ -3,7 +3,7 @@ import {
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
-import { User } from '@prisma/client';
+import { Address, User } from '@prisma/client';
 import { cpf } from 'cpf-cnpj-validator';
 import { PrismaService } from 'src/database/prisma.service';
 import { CreateUserDto } from './dtos/create-user.dto';
@@ -38,21 +38,55 @@ export class UserService implements IUserService {
     if (userWithSameCpf)
       throw new UnauthorizedException(['User with same CPF already exists']);
 
-    const user = await this.prisma.user.create({ data });
+    const { address, ...userData } = data;
+
+    const user = await this.prisma.user.create({
+      data: userData,
+    });
+
+    if (address) {
+      await this.prisma.address.create({
+        data: {
+          ...address,
+          userId: user.id,
+        },
+      });
+    }
 
     return {
       id: user.id,
       email: user.email,
       name: user.name,
       role: user.role,
+      rg: user.rg,
+      cpf: user.cpf,
+      cellphone: user.cellphone,
+      refreshToken: user.refreshToken,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
-      refreshToken: user.refreshToken,
+      addresses: data.address
+        ? [
+            {
+              street: data.address.street,
+              number: data.address.number,
+              neighborhood: data.address.neighborhood,
+              city: data.address.city,
+              state: data.address.state,
+              zipCode: data.address.zipCode,
+            },
+          ]
+        : [],
     };
   }
 
   findAll(): Promise<User[]> {
     throw new Error('Method not implemented.');
+  }
+
+  async findAllUserAddresses(userId: number): Promise<Address[]> {
+    return await this.prisma.address.findMany({
+      where: { userId },
+    });
   }
 
   async findById({ id }: FindUserByIdDto): Promise<User | null> {
@@ -77,14 +111,27 @@ export class UserService implements IUserService {
       throw new UnauthorizedException(['User not found']);
     }
 
+    const addresses = await this.findAllUserAddresses(user.id);
+
     return {
       id: user.id,
       email: user.email,
       name: user.name,
       role: user.role,
+      rg: user.rg,
+      cpf: user.cpf,
+      cellphone: user.cellphone,
+      refreshToken: user.refreshToken,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
-      refreshToken: user.refreshToken,
+      addresses: addresses.map((address) => ({
+        street: address.street,
+        number: address.number,
+        neighborhood: address.neighborhood,
+        city: address.city,
+        state: address.state,
+        zipCode: address.zipCode,
+      })),
     };
   }
 
@@ -95,14 +142,27 @@ export class UserService implements IUserService {
       throw new UnauthorizedException(['User not found']);
     }
 
+    const addresses = await this.findAllUserAddresses(user.id);
+
     return {
       id: user.id,
       email: user.email,
       name: user.name,
       role: user.role,
+      rg: user.rg,
+      cpf: user.cpf,
+      cellphone: user.cellphone,
+      refreshToken: user.refreshToken,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
-      refreshToken: user.refreshToken,
+      addresses: addresses.map((address) => ({
+        street: address.street,
+        number: address.number,
+        neighborhood: address.neighborhood,
+        city: address.city,
+        state: address.state,
+        zipCode: address.zipCode,
+      })),
     };
   }
 

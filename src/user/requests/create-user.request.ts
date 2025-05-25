@@ -1,4 +1,5 @@
 import { Role } from '@prisma/client';
+import { Type } from 'class-transformer';
 import {
   IsEmail,
   IsEnum,
@@ -6,7 +7,9 @@ import {
   IsOptional,
   MaxLength,
   MinLength,
+  ValidateNested,
 } from 'class-validator';
+import { UserAddressRequest } from './user-address.request';
 
 export class CreateUserRequest {
   @IsNotEmpty()
@@ -27,4 +30,14 @@ export class CreateUserRequest {
   @IsOptional()
   @IsEnum(Role)
   role?: Role;
+
+  @IsOptional()
+  @MinLength(11)
+  @MaxLength(11)
+  cellphone?: string;
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => UserAddressRequest)
+  address?: UserAddressRequest;
 }
