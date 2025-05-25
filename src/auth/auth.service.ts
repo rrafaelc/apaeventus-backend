@@ -18,14 +18,15 @@ export class AuthService implements IAuthService {
   async signIn({ email, password }: SignInDto): Promise<LoginResponseDto> {
     const user = await this.userService.findByEmail({ email });
 
-    if (!user) throw new UnauthorizedException('Invalid credentials');
+    if (!user) throw new UnauthorizedException(['Invalid credentials']);
 
-    if (!user.password) throw new UnauthorizedException('Invalid credentials');
+    if (!user.password)
+      throw new UnauthorizedException(['Invalid credentials']);
 
     const passwordMatch = await bcrypt.compare(password, user.password);
 
     if (!passwordMatch) {
-      throw new UnauthorizedException('Invalid credentials');
+      throw new UnauthorizedException(['Invalid credentials']);
     }
 
     const accessToken = await this.tokenService.generateAccessToken(user);
@@ -61,7 +62,7 @@ export class AuthService implements IAuthService {
       const user = await this.userService.findById({ id });
 
       if (!user || user.refreshToken !== refreshToken) {
-        throw new UnauthorizedException('Invalid refresh token');
+        throw new UnauthorizedException(['Invalid refresh token']);
       }
 
       const newAccessToken = await this.tokenService.generateAccessToken(user);
@@ -70,7 +71,7 @@ export class AuthService implements IAuthService {
         accessToken: newAccessToken,
       };
     } catch {
-      throw new UnauthorizedException('Invalid refresh token');
+      throw new UnauthorizedException(['Invalid refresh token']);
     }
   }
 
@@ -81,7 +82,7 @@ export class AuthService implements IAuthService {
   async firstAccess({ email, password }: FirstAccessDto): Promise<void> {
     const user = await this.userService.findByEmail({ email });
 
-    if (!user) throw new UnauthorizedException('User not found');
+    if (!user) throw new UnauthorizedException(['User not found']);
 
     const hashedPassword = await bcrypt.hash(password, 10);
 

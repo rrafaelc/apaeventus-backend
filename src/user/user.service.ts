@@ -1,10 +1,14 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { User } from '@prisma/client';
+import { cpf } from 'cpf-cnpj-validator';
 import { PrismaService } from 'src/database/prisma.service';
 import { CreateUserDto } from './dtos/create-user.dto';
 import { FindUserByEmailDto } from './dtos/find-user-by-email.dto';
 import { FindUserByIdDto } from './dtos/find-user-by-id.dto';
-import { UpdateUserRoleDto } from './dtos/update-user-role.dto';
 import { UpdateUserDto } from './dtos/update-user.dto';
 import { UserResponseDto } from './dtos/user.response.dto';
 import { IUserService } from './interfaces/IUserService';
@@ -14,6 +18,8 @@ export class UserService implements IUserService {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(data: CreateUserDto): Promise<UserResponseDto> {
+    this.validationCreateUser(data);
+
     const userAlreadyExists = await this.prisma.user.findUnique({
       where: {
         email: data.email,
@@ -21,7 +27,16 @@ export class UserService implements IUserService {
     });
 
     if (userAlreadyExists)
-      throw new UnauthorizedException('User already exists');
+      throw new UnauthorizedException(['User already exists']);
+
+    const userWithSameCpf = await this.prisma.user.findUnique({
+      where: {
+        cpf: data.cpf,
+      },
+    });
+
+    if (userWithSameCpf)
+      throw new UnauthorizedException(['User with same CPF already exists']);
 
     const user = await this.prisma.user.create({ data });
 
@@ -59,7 +74,7 @@ export class UserService implements IUserService {
     });
 
     if (!user) {
-      throw new UnauthorizedException('User not found');
+      throw new UnauthorizedException(['User not found']);
     }
 
     return {
@@ -71,21 +86,13 @@ export class UserService implements IUserService {
       updatedAt: user.updatedAt,
       refreshToken: user.refreshToken,
     };
-  }
-
-  updateRole(updateUserRoleDto: UpdateUserRoleDto): Promise<UserResponseDto> {
-    throw new Error('Method not implemented.' + updateUserRoleDto.id);
-  }
-
-  delete(id: number): Promise<void> {
-    throw new Error('Method not implemented.' + id);
   }
 
   async getProfile(id: number): Promise<UserResponseDto> {
     const user = await this.findById({ id });
 
     if (!user) {
-      throw new UnauthorizedException('User not found');
+      throw new UnauthorizedException(['User not found']);
     }
 
     return {
@@ -97,5 +104,10 @@ export class UserService implements IUserService {
       updatedAt: user.updatedAt,
       refreshToken: user.refreshToken,
     };
+  }
+
+  private validationCreateUser(createUserDto: CreateUserDto): void {
+    if (!cpf.isValid(createUserDto.cpf))
+      throw new BadRequestException(['Invalid CPF']);
   }
 }

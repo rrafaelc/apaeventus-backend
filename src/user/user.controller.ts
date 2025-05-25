@@ -2,12 +2,9 @@ import {
   BadRequestException,
   Body,
   Controller,
-  Delete,
   Get,
   HttpCode,
   HttpStatus,
-  Param,
-  Patch,
   Post,
   Request,
   UseGuards,
@@ -16,7 +13,6 @@ import { Role } from '@prisma/client';
 import { AuthGuard } from 'src/auth/guards/auth.guard';
 import { AuthenticatedRequest } from 'src/auth/requests/authenticated-request';
 import { Roles } from './decorators/roles.decorator';
-import { UpdateUserDto } from './dtos/update-user.dto';
 import { UserResponseDto } from './dtos/user.response.dto';
 import { CreateUserRequest } from './requests/create-user.request';
 import { UserService } from './user.service';
@@ -25,23 +21,24 @@ import { UserService } from './user.service';
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
-  @Roles(Role.ADMIN, Role.SELLER)
-  @Post()
-  create(
+  @Roles(Role.ADMIN)
+  @Post('create-seller')
+  createSeller(
     @Body() createUserRequest: CreateUserRequest,
   ): Promise<UserResponseDto> {
+    createUserRequest.role = Role.SELLER;
+
     return this.userService.create(createUserRequest);
   }
 
-  @HttpCode(HttpStatus.OK)
-  @Patch()
-  update(@Body() updateUserDto: UpdateUserDto): Promise<UserResponseDto> {
-    return this.userService.update(updateUserDto);
-  }
+  @Roles(Role.ADMIN, Role.SELLER)
+  @Post('create-customer')
+  createCustomer(
+    @Body() createUserRequest: CreateUserRequest,
+  ): Promise<UserResponseDto> {
+    createUserRequest.role = Role.CUSTOMER;
 
-  @Delete(':id')
-  delete(@Param('id') id: number): Promise<void> {
-    return this.userService.delete(id);
+    return this.userService.create(createUserRequest);
   }
 
   @UseGuards(AuthGuard)
@@ -50,9 +47,7 @@ export class UserController {
   async profile(
     @Request() { userId }: AuthenticatedRequest,
   ): Promise<UserResponseDto> {
-    if (!userId) {
-      throw new BadRequestException('UserId not found in request');
-    }
+    if (!userId) throw new BadRequestException(['UserId not found in request']);
 
     return this.userService.getProfile(userId);
   }

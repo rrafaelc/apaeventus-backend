@@ -31,7 +31,7 @@ export class RolesGuard implements CanActivate {
     const token = this.extractTokenFromHeader(request);
 
     if (!token) {
-      throw new UnauthorizedException('Access token is required');
+      throw new UnauthorizedException(['Access token is required']);
     }
 
     try {
@@ -42,7 +42,7 @@ export class RolesGuard implements CanActivate {
 
       return requiredRoles.some((role) => request.role === role);
     } catch {
-      throw new UnauthorizedException('Invalid access token');
+      throw new UnauthorizedException(['Invalid access token']);
     }
   }
 

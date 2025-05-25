@@ -24,16 +24,16 @@ export class TicketService implements ITicketService {
       const oneDayFromNow = dayjs(now).add(1, 'day').toDate();
 
       if (new Date(expiresAt) < oneDayFromNow) {
-        throw new BadRequestException(
+        throw new BadRequestException([
           'Expiration date must be at least 1 day in the future',
-        );
+        ]);
       }
     } catch (error) {
-      throw new BadRequestException(
+      throw new BadRequestException([
         typeof error === 'object' && error !== null && 'message' in error
           ? (error as { message: string }).message
           : 'Invalid expiration date',
-      );
+      ]);
     }
   }
 }

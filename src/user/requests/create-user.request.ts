@@ -4,6 +4,7 @@ import {
   IsEnum,
   IsNotEmpty,
   IsOptional,
+  MaxLength,
   MinLength,
 } from 'class-validator';
 
@@ -20,6 +21,7 @@ export class CreateUserRequest {
 
   @IsNotEmpty()
   @MinLength(11)
+  @MaxLength(11)
   cpf: string;
 
   @IsOptional()
