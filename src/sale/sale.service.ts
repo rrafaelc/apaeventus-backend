@@ -5,6 +5,7 @@ import * as QRCode from 'qrcode';
 import { PrismaService } from 'src/database/prisma.service';
 import { TicketService } from 'src/ticket/ticket.service';
 import { UserService } from 'src/user/user.service';
+import { encrypt } from 'src/utils/encrypt-decrypt';
 import { CreateSaleDto } from './dtos/create-sale.dto';
 import { ISaleService } from './interfaces/ISaleService';
 import { generatePdf } from './utils/generatePdf';
@@ -61,7 +62,7 @@ export class SaleService implements ISaleService {
     });
 
     for (const sale of ticketSales) {
-      const qrContent = `${sale.id}`;
+      const qrContent = encrypt(`${sale.id}`);
       const dataUrl = await QRCode.toDataURL(qrContent);
 
       await this.prisma.ticketSale.update({
