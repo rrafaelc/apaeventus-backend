@@ -98,6 +98,9 @@ export class AuthService implements IAuthService {
 
     if (!user) throw new UnauthorizedException(['User not found']);
 
+    if (user.password)
+      throw new UnauthorizedException(['User already has a password']);
+
     const hashedPassword = await bcrypt.hash(password, 10);
 
     await this.userService.update({

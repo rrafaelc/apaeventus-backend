@@ -28,7 +28,7 @@ export class SaleController {
     return this.saleService.create({
       ticketId: createSaleRequest.ticketId,
       sellerId: userId,
-      customerId: createSaleRequest.customerId,
+      customerEmail: createSaleRequest.customerEmail,
       quantity: createSaleRequest.quantity,
     });
   }

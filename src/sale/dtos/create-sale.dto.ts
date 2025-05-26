@@ -1,6 +1,6 @@
 export class CreateSaleDto {
   ticketId: number;
   sellerId: number;
-  customerId: number;
+  customerEmail: string;
   quantity: number;
 }

@@ -21,7 +21,7 @@ export class SaleService implements ISaleService {
   async create({
     ticketId,
     sellerId,
-    customerId,
+    customerEmail,
     quantity,
   }: CreateSaleDto): Promise<void> {
     const ticket = await this.ticketService.findById(ticketId);
@@ -30,7 +30,7 @@ export class SaleService implements ISaleService {
     const seller = await this.userService.findById(sellerId);
     if (!seller) throw new BadRequestException(['Seller not found']);
 
-    const customer = await this.userService.findById(customerId);
+    const customer = await this.userService.findByEmail(customerEmail);
     if (!customer) throw new BadRequestException(['Customer not found']);
     if (customer.role !== Role.CUSTOMER)
       throw new BadRequestException(['Customer must be a customer']);
@@ -42,7 +42,7 @@ export class SaleService implements ISaleService {
     await this.prisma.$transaction(async (prisma) => {
       for (let i = 0; i < quantity; i++) {
         const sale = await prisma.ticketSale.create({
-          data: { ticketId, sellerId, customerId },
+          data: { ticketId, sellerId, customerId: customer.id },
         });
         createdSales.push(sale);
       }
