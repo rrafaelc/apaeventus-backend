@@ -2,6 +2,8 @@ import {
   BadRequestException,
   Body,
   Controller,
+  HttpCode,
+  HttpStatus,
   Post,
   Request,
 } from '@nestjs/common';
@@ -29,5 +31,19 @@ export class SaleController {
       customerId: createSaleRequest.customerId,
       quantity: createSaleRequest.quantity,
     });
+  }
+
+  @Roles(Role.ADMIN)
+  @HttpCode(HttpStatus.OK)
+  @Post('set-used')
+  updateAsUsed(@Body('saleId') saleId: number): Promise<void> {
+    return this.saleService.updateAsUsed(saleId);
+  }
+
+  @Roles(Role.ADMIN)
+  @HttpCode(HttpStatus.OK)
+  @Post('set-unused')
+  updateAsUnused(@Body('saleId') saleId: number): Promise<void> {
+    return this.saleService.updateAsUnused(saleId);
   }
 }

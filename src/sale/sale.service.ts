@@ -81,4 +81,36 @@ export class SaleService implements ISaleService {
 
     // TODO: Send email to customer with ticket information and generate PDF to save in a bucket
   }
+
+  async updateAsUsed(saleId: number): Promise<void> {
+    const ticketSale = await this.prisma.ticketSale.findUnique({
+      where: { id: saleId },
+    });
+
+    if (!ticketSale) throw new BadRequestException(['TicketSale not found']);
+
+    if (ticketSale.used)
+      throw new BadRequestException(['TicketSale already used']);
+
+    await this.prisma.ticketSale.update({
+      where: { id: saleId },
+      data: { used: true },
+    });
+  }
+
+  async updateAsUnused(saleId: number): Promise<void> {
+    const ticketSale = await this.prisma.ticketSale.findUnique({
+      where: { id: saleId },
+    });
+
+    if (!ticketSale) throw new BadRequestException(['TicketSale not found']);
+
+    if (!ticketSale.used)
+      throw new BadRequestException(['TicketSale not used yet']);
+
+    await this.prisma.ticketSale.update({
+      where: { id: saleId },
+      data: { used: false },
+    });
+  }
 }
