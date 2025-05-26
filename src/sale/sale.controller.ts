@@ -36,14 +36,14 @@ export class SaleController {
   @Roles(Role.ADMIN)
   @HttpCode(HttpStatus.OK)
   @Post('set-used')
-  updateAsUsed(@Body('saleId') saleId: number): Promise<void> {
-    return this.saleService.updateAsUsed(saleId);
+  updateAsUsed(@Body('encryptSaleId') encryptSaleId: string): Promise<void> {
+    return this.saleService.updateAsUsed(encryptSaleId);
   }
 
   @Roles(Role.ADMIN)
   @HttpCode(HttpStatus.OK)
   @Post('set-unused')
-  updateAsUnused(@Body('saleId') saleId: number): Promise<void> {
-    return this.saleService.updateAsUnused(saleId);
+  updateAsUnused(@Body('encryptSaleId') encryptSaleId: string): Promise<void> {
+    return this.saleService.updateAsUnused(encryptSaleId);
   }
 }

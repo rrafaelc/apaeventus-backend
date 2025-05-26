@@ -5,7 +5,7 @@ import * as QRCode from 'qrcode';
 import { PrismaService } from 'src/database/prisma.service';
 import { TicketService } from 'src/ticket/ticket.service';
 import { UserService } from 'src/user/user.service';
-import { encrypt } from 'src/utils/encrypt-decrypt';
+import { decrypt, encrypt } from 'src/utils/encrypt-decrypt';
 import { CreateSaleDto } from './dtos/create-sale.dto';
 import { ISaleService } from './interfaces/ISaleService';
 import { generatePdf } from './utils/generatePdf';
@@ -83,7 +83,16 @@ export class SaleService implements ISaleService {
     // TODO: Send email to customer with ticket information and generate PDF to save in a bucket
   }
 
-  async updateAsUsed(saleId: number): Promise<void> {
+  async updateAsUsed(encryptSaleId: string): Promise<void> {
+    let saleId: number;
+
+    try {
+      saleId = parseInt(decrypt(encryptSaleId));
+      if (isNaN(saleId)) throw new BadRequestException(['Invalid sale ID']);
+    } catch {
+      throw new BadRequestException(['Invalid encrypt text']);
+    }
+
     const ticketSale = await this.prisma.ticketSale.findUnique({
       where: { id: saleId },
     });
@@ -99,7 +108,16 @@ export class SaleService implements ISaleService {
     });
   }
 
-  async updateAsUnused(saleId: number): Promise<void> {
+  async updateAsUnused(encryptSaleId: string): Promise<void> {
+    let saleId: number;
+
+    try {
+      saleId = parseInt(decrypt(encryptSaleId));
+      if (isNaN(saleId)) throw new BadRequestException(['Invalid sale ID']);
+    } catch {
+      throw new BadRequestException(['Invalid encrypt text']);
+    }
+
     const ticketSale = await this.prisma.ticketSale.findUnique({
       where: { id: saleId },
     });
