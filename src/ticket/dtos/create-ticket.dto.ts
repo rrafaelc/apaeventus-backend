@@ -1,8 +1,8 @@
 export class CreateTicketDto {
   title: string;
   description: string;
+  eventDate: string;
   imageUrl?: string | null;
-  expiresAt: string;
   quantity: number;
   price: number;
 }

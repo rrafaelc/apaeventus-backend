@@ -8,7 +8,7 @@ export class CreateTicketRequest {
   description: string;
 
   @IsDateString()
-  expiresAt: string;
+  eventDate: string;
 
   @IsNumber()
   @Min(1)

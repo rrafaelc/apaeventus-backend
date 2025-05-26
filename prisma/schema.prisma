@@ -48,8 +48,8 @@ model Ticket {
   id          Int      @id @default(autoincrement())
   title       String
   description String
+  eventDate   DateTime
   imageUrl    String?
-  expiresAt   DateTime
   quantity    Int
   price       Float
   isActive    Boolean  @default(true)

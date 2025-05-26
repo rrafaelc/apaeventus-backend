@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { Role } from '@prisma/client';
+import { Role, Ticket, TicketSale } from '@prisma/client';
 import { writeFileSync } from 'fs';
 import * as QRCode from 'qrcode';
 import { PrismaService } from 'src/database/prisma.service';
@@ -35,33 +35,20 @@ export class SaleService implements ISaleService {
     if (customer.role !== Role.CUSTOMER)
       throw new BadRequestException(['Customer must be a customer']);
 
-    const ticketSold = await this.ticketService.countSold(ticketId);
+    await this.ticketValidation(ticket, quantity);
 
-    if (ticketSold >= ticket.quantity)
-      throw new BadRequestException(['Ticket all sold out']);
+    const createdSales: TicketSale[] = [];
 
-    if (ticketSold + quantity > ticket.quantity)
-      throw new BadRequestException(['Ticket quantity exceeded available']);
-
-    const data = Array.from({ length: quantity }).map(() => ({
-      ticketId,
-      sellerId,
-      customerId,
-    }));
-
-    await this.prisma.ticketSale.createMany({ data });
-
-    const ticketSales = await this.prisma.ticketSale.findMany({
-      where: {
-        ticketId,
-        sellerId,
-        customerId,
-      },
-      orderBy: { id: 'desc' },
-      take: quantity,
+    await this.prisma.$transaction(async (prisma) => {
+      for (let i = 0; i < quantity; i++) {
+        const sale = await prisma.ticketSale.create({
+          data: { ticketId, sellerId, customerId },
+        });
+        createdSales.push(sale);
+      }
     });
 
-    for (const sale of ticketSales) {
+    for (const sale of createdSales) {
       const qrContent = encrypt(`${sale.id}`);
       const dataUrl = await QRCode.toDataURL(qrContent);
 
@@ -131,5 +118,24 @@ export class SaleService implements ISaleService {
       where: { id: saleId },
       data: { used: false },
     });
+  }
+
+  private async ticketValidation(
+    ticket: Ticket,
+    quantity: number,
+  ): Promise<void> {
+    if (!ticket.isActive)
+      throw new BadRequestException(['Ticket is not active']);
+
+    if (ticket.eventDate < new Date())
+      throw new BadRequestException(['Ticket event date is expired']);
+
+    const ticketSold = await this.ticketService.countSold(ticket.id);
+
+    if (ticketSold >= ticket.quantity)
+      throw new BadRequestException(['Ticket all sold out']);
+
+    if (ticketSold + quantity > ticket.quantity)
+      throw new BadRequestException(['Ticket quantity exceeded available']);
   }
 }

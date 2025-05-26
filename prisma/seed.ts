@@ -27,8 +27,10 @@ async function main() {
       title: '1ª TARDE ROCK',
       description:
         'Nossa primeira edição da Tarde Rock em prol a Apae de Itapira',
+      eventDate: new Date(
+        new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).setHours(19, 0, 0, 0), // Event in 30 days at 19:00
+      ),
       imageUrl: null,
-      expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // Expires in 30 days
       quantity: 100,
       price: 30.0,
       isActive: true,
@@ -44,7 +46,9 @@ async function main() {
       title: 'Festa Junina',
       description: 'A melhor festa junina do Brasil',
       imageUrl: null,
-      expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // Expires in 30 days
+      eventDate: new Date(
+        new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).setHours(19, 0, 0, 0), // Event in 30 days at 19:00
+      ),
       quantity: 500,
       price: 100.0,
       isActive: true,
@@ -60,8 +64,10 @@ async function main() {
       title: '1ª QUEIMA DO ALHO',
       description:
         'Primeira edição da Queima do Alho juntamente com a tradicional Cavalgada e Passeio de Jeep',
+      eventDate: new Date(
+        new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).setHours(19, 0, 0, 0), // Event in 30 days at 19:00
+      ),
       imageUrl: null,
-      expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // Expires in 30 days
       quantity: 200,
       price: 100.0,
       isActive: true,

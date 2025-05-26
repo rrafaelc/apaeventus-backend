@@ -12,7 +12,7 @@ export class TicketService implements ITicketService {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(data: CreateTicketDto): Promise<Ticket> {
-    this.validationExpiresAt(data.expiresAt);
+    this.validationIsEventExpired(data.eventDate);
 
     const ticket = await this.prisma.ticket.create({ data });
 
@@ -86,15 +86,15 @@ export class TicketService implements ITicketService {
     });
   }
 
-  private validationExpiresAt(expiresAt: string): void {
+  private validationIsEventExpired(eventDate: string): void {
     try {
       const now = new Date();
 
       const oneDayFromNow = dayjs(now).add(1, 'day').toDate();
 
-      if (new Date(expiresAt) < oneDayFromNow) {
+      if (new Date(eventDate) < oneDayFromNow) {
         throw new BadRequestException([
-          'Expiration date must be at least 1 day in the future',
+          'Event date must be at least 1 day in the future',
         ]);
       }
     } catch (error) {
