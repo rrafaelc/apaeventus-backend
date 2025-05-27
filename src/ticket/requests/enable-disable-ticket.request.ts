@@ -1,7 +1,7 @@
-import { IsBoolean, IsNumber } from 'class-validator';
+import { IsBoolean, IsUUID } from 'class-validator';
 
 export class EnableDisableTicketRequest {
-  @IsNumber()
+  @IsUUID()
   id: string;
 
   @IsBoolean()
