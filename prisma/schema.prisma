@@ -46,7 +46,7 @@ model Ticket {
 
 model TicketSale {
   id           String   @id @default(uuid())
-  customerId   String
+  userId       String
   ticketId     String
   used         Boolean  @default(false)
   pdfUrl       String?
@@ -55,7 +55,7 @@ model TicketSale {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  customer User   @relation("UserPurchases", fields: [customerId], references: [id])
+  customer User   @relation("UserPurchases", fields: [userId], references: [id])
   ticket   Ticket @relation(fields: [ticketId], references: [id])
 }
 

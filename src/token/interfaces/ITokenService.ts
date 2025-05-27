@@ -6,8 +6,4 @@ export interface ITokenService {
   generateRefreshToken(user: User): Promise<string>;
   verifyAccessToken(token: string): Promise<TokenDto>;
   verifyRefreshToken(token: string): Promise<TokenDto>;
-  revokeRefreshToken(userId: number): Promise<void>;
-  revokeAllRefreshTokens(): Promise<void>;
-  getUserIdFromAccessToken(token: string): Promise<string>;
-  getUserIdFromRefreshToken(token: string): Promise<string>;
 }

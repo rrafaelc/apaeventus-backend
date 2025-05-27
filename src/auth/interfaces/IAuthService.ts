@@ -1,11 +1,8 @@
 import { AccessTokenResponseDto } from '../dtos/access-token-response.dto';
-import { FirstAccessDto } from '../dtos/first-access.dto';
 import { LoginResponseDto } from '../dtos/login-response.dto';
-import { SignInDto } from '../dtos/sign-in.dto';
+import { LoginDto } from '../dtos/login.dto';
 
 export interface IAuthService {
-  signIn(signInDto: SignInDto): Promise<LoginResponseDto>;
+  login(loginDto: LoginDto): Promise<LoginResponseDto>;
   refreshAccessToken(refreshToken: string): Promise<AccessTokenResponseDto>;
-  revokeRefreshToken(userId: number): Promise<void>;
-  firstAccess(firstAccessDto: FirstAccessDto): Promise<void>;
 }

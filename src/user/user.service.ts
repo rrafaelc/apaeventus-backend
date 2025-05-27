@@ -4,6 +4,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { Address, User } from '@prisma/client';
+import * as bcrypt from 'bcrypt';
 import { cpf } from 'cpf-cnpj-validator';
 import { PrismaService } from 'src/database/prisma.service';
 import { CreateUserDto } from './dtos/create-user.dto';
@@ -36,20 +37,14 @@ export class UserService implements IUserService {
     if (userWithSameCpf)
       throw new UnauthorizedException(['User with same CPF already exists']);
 
-    const { address, ...userData } = data;
+    const hashedPassword = await bcrypt.hash(data.password, 10);
 
     const user = await this.prisma.user.create({
-      data: userData,
+      data: {
+        ...data,
+        password: hashedPassword,
+      },
     });
-
-    if (address) {
-      await this.prisma.address.create({
-        data: {
-          ...address,
-          userId: user.id,
-        },
-      });
-    }
 
     return {
       id: user.id,
@@ -59,21 +54,8 @@ export class UserService implements IUserService {
       rg: user.rg,
       cpf: user.cpf,
       cellphone: user.cellphone,
-      refreshToken: user.refreshToken,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
-      addresses: data.address
-        ? [
-            {
-              street: data.address.street,
-              number: data.address.number,
-              neighborhood: data.address.neighborhood,
-              city: data.address.city,
-              state: data.address.state,
-              zipCode: data.address.zipCode,
-            },
-          ]
-        : [],
     };
   }
 
@@ -81,13 +63,13 @@ export class UserService implements IUserService {
     throw new Error('Method not implemented.');
   }
 
-  async findAllUserAddresses(userId: number): Promise<Address[]> {
+  async findAllUserAddresses(userId: string): Promise<Address[]> {
     return await this.prisma.address.findMany({
       where: { userId },
     });
   }
 
-  async findById(id: number): Promise<User | null> {
+  async findById(id: string): Promise<User | null> {
     return this.prisma.user.findUnique({
       where: { id },
     });
@@ -109,8 +91,6 @@ export class UserService implements IUserService {
       throw new UnauthorizedException(['User not found']);
     }
 
-    const addresses = await this.findAllUserAddresses(user.id);
-
     return {
       id: user.id,
       email: user.email,
@@ -119,29 +99,18 @@ export class UserService implements IUserService {
       rg: user.rg,
       cpf: user.cpf,
       cellphone: user.cellphone,
-      refreshToken: user.refreshToken,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
-      addresses: addresses.map((address) => ({
-        street: address.street,
-        number: address.number,
-        neighborhood: address.neighborhood,
-        city: address.city,
-        state: address.state,
-        zipCode: address.zipCode,
-      })),
     };
   }
 
-  async getProfile(id: number): Promise<UserResponseDto> {
+  async getProfile(id: string): Promise<UserResponseDto> {
     const user = await this.findById(id);
 
     if (!user) {
       throw new UnauthorizedException(['User not found']);
     }
 
-    const addresses = await this.findAllUserAddresses(user.id);
-
     return {
       id: user.id,
       email: user.email,
@@ -150,17 +119,8 @@ export class UserService implements IUserService {
       rg: user.rg,
       cpf: user.cpf,
       cellphone: user.cellphone,
-      refreshToken: user.refreshToken,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
-      addresses: addresses.map((address) => ({
-        street: address.street,
-        number: address.number,
-        neighborhood: address.neighborhood,
-        city: address.city,
-        state: address.state,
-        zipCode: address.zipCode,
-      })),
     };
   }
 

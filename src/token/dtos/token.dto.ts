@@ -1,7 +1,7 @@
 import { Role } from '@prisma/client';
 
 export interface TokenDto {
-  id: number;
+  id: string;
   role: Role;
   iat: number;
   exp: number;

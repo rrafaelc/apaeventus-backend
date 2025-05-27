@@ -1,3 +1,6 @@
+import { IsUUID } from 'class-validator';
+
 export class FindUserByIdRequest {
-  id: number;
+  @IsUUID()
+  id: string;
 }

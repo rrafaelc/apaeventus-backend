@@ -6,6 +6,7 @@ import {
   HttpStatus,
   Post,
   Request,
+  UseGuards,
 } from '@nestjs/common';
 import { Role } from '@prisma/client';
 import { AuthenticatedRequest } from 'src/auth/requests/authenticated-request';
@@ -17,7 +18,7 @@ import { SaleService } from './sale.service';
 export class SaleController {
   constructor(private readonly saleService: SaleService) {}
 
-  @Roles(Role.ADMIN, Role.SELLER)
+  @UseGuards()
   @Post()
   create(
     @Request() { userId }: AuthenticatedRequest,
@@ -27,8 +28,7 @@ export class SaleController {
 
     return this.saleService.create({
       ticketId: createSaleRequest.ticketId,
-      sellerId: userId,
-      customerEmail: createSaleRequest.customerEmail,
+      userId,
       quantity: createSaleRequest.quantity,
     });
   }
@@ -36,14 +36,14 @@ export class SaleController {
   @Roles(Role.ADMIN)
   @HttpCode(HttpStatus.OK)
   @Post('set-used')
-  updateAsUsed(@Body('encryptSaleId') encryptSaleId: string): Promise<void> {
-    return this.saleService.updateAsUsed(encryptSaleId);
+  updateAsUsed(@Body('saleId') saleId: string): Promise<void> {
+    return this.saleService.updateAsUsed(saleId);
   }
 
   @Roles(Role.ADMIN)
   @HttpCode(HttpStatus.OK)
   @Post('set-unused')
-  updateAsUnused(@Body('encryptSaleId') encryptSaleId: string): Promise<void> {
-    return this.saleService.updateAsUnused(encryptSaleId);
+  updateAsUnused(@Body('saleId') saleId: string): Promise<void> {
+    return this.saleService.updateAsUnused(saleId);
   }
 }

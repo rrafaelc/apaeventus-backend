@@ -6,8 +6,7 @@ import { PDFDocument } from 'pdf-lib';
 export const generatePdf = async (
   qrCodeBuffer: Buffer<ArrayBufferLike>,
   ticket: Ticket,
-  seller: User,
-  customer: User,
+  user: User,
 ): Promise<Uint8Array<ArrayBufferLike>> => {
   const pdfDoc = await PDFDocument.create();
   const page = pdfDoc.addPage([400, 600]);
@@ -25,14 +24,14 @@ export const generatePdf = async (
 
   page.drawText(`Ingresso: ${ticket.title}`, { x: 50, y: 450, size: 18 });
 
-  page.drawText(`Vendedor: ${seller.name}`, { x: 50, y: 420, size: 14 });
-  page.drawText(`Email: ${seller.email}`, {
+  page.drawText(`Vendedor: ${user.name}`, { x: 50, y: 420, size: 14 });
+  page.drawText(`Email: ${user.email}`, {
     x: 50,
     y: 405,
     size: 10,
   });
   page.drawText(
-    `Celular: ${seller.cellphone ? formatPhoneNumber(seller.cellphone) : 'N/A'}`,
+    `Celular: ${user.cellphone ? formatPhoneNumber(user.cellphone) : 'N/A'}`,
     {
       x: 50,
       y: 392,
@@ -40,14 +39,14 @@ export const generatePdf = async (
     },
   );
 
-  page.drawText(`Cliente: ${customer.name}`, { x: 50, y: 362, size: 14 });
-  page.drawText(`Email: ${customer.email}`, {
+  page.drawText(`Cliente: ${user.name}`, { x: 50, y: 362, size: 14 });
+  page.drawText(`Email: ${user.email}`, {
     x: 50,
     y: 347,
     size: 10,
   });
   page.drawText(
-    `Celular: ${customer.cellphone ? formatPhoneNumber(customer.cellphone) : 'N/A'}`,
+    `Celular: ${user.cellphone ? formatPhoneNumber(user.cellphone) : 'N/A'}`,
     {
       x: 50,
       y: 334,

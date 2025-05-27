@@ -1,11 +1,4 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Param,
-  ParseIntPipe,
-  Post,
-} from '@nestjs/common';
+import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { Role, Ticket } from '@prisma/client';
 import { Roles } from 'src/user/decorators/roles.decorator';
 import { TicketResponseDto } from './dtos/ticket-response.dto';
@@ -29,15 +22,15 @@ export class TicketController {
     return this.ticketService.enableDisableTicket(enableDisableTicketRequest);
   }
 
-  @Roles(Role.ADMIN, Role.SELLER)
+  @Roles(Role.ADMIN)
   @Get(':id/count-sold')
-  countSold(@Param('id', ParseIntPipe) id: number): Promise<number> {
+  countSold(@Param('id') id: string): Promise<number> {
     return this.ticketService.countSold(id);
   }
 
-  @Roles(Role.ADMIN, Role.SELLER)
+  @Roles(Role.ADMIN)
   @Get(':id/count-used')
-  countUsed(@Param('id', ParseIntPipe) id: number): Promise<number> {
+  countUsed(@Param('id') id: string): Promise<number> {
     return this.ticketService.countUsed(id);
   }
 }

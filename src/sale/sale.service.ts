@@ -1,11 +1,10 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { Role, Ticket, TicketSale } from '@prisma/client';
+import { Ticket, TicketSale } from '@prisma/client';
 import { writeFileSync } from 'fs';
 import * as QRCode from 'qrcode';
 import { PrismaService } from 'src/database/prisma.service';
 import { TicketService } from 'src/ticket/ticket.service';
 import { UserService } from 'src/user/user.service';
-import { decrypt, encrypt } from 'src/utils/encrypt-decrypt';
 import { CreateSaleDto } from './dtos/create-sale.dto';
 import { ISaleService } from './interfaces/ISaleService';
 import { generatePdf } from './utils/generatePdf';
@@ -18,22 +17,12 @@ export class SaleService implements ISaleService {
     private readonly prisma: PrismaService,
   ) {}
 
-  async create({
-    ticketId,
-    sellerId,
-    customerEmail,
-    quantity,
-  }: CreateSaleDto): Promise<void> {
+  async create({ ticketId, userId, quantity }: CreateSaleDto): Promise<void> {
     const ticket = await this.ticketService.findById(ticketId);
     if (!ticket) throw new BadRequestException(['Ticket not found']);
 
-    const seller = await this.userService.findById(sellerId);
-    if (!seller) throw new BadRequestException(['Seller not found']);
-
-    const customer = await this.userService.findByEmail(customerEmail);
-    if (!customer) throw new BadRequestException(['Customer not found']);
-    if (customer.role !== Role.CUSTOMER)
-      throw new BadRequestException(['Customer must be a customer']);
+    const user = await this.userService.findByEmail(userId);
+    if (!user) throw new BadRequestException(['User not found']);
 
     await this.ticketValidation(ticket, quantity);
 
@@ -42,14 +31,14 @@ export class SaleService implements ISaleService {
     await this.prisma.$transaction(async (prisma) => {
       for (let i = 0; i < quantity; i++) {
         const sale = await prisma.ticketSale.create({
-          data: { ticketId, sellerId, customerId: customer.id },
+          data: { ticketId: ticket.id, userId: user.id },
         });
         createdSales.push(sale);
       }
     });
 
     for (const sale of createdSales) {
-      const qrContent = encrypt(`${sale.id}`);
+      const qrContent = sale.id;
       const dataUrl = await QRCode.toDataURL(qrContent);
 
       await this.prisma.ticketSale.update({
@@ -60,7 +49,7 @@ export class SaleService implements ISaleService {
       const buffer = await QRCode.toBuffer(qrContent);
       // writeFileSync(`qrcodes/qrcode-ticketSale-${sale.id}.png`, buffer);
 
-      const pdfBytes = await generatePdf(buffer, ticket, seller, customer);
+      const pdfBytes = await generatePdf(buffer, ticket, user);
       writeFileSync(
         `pdfs/ticketSale-${sale.id}-${new Date().getTime()}.pdf`,
         pdfBytes,
@@ -70,16 +59,7 @@ export class SaleService implements ISaleService {
     // TODO: Send email to customer with ticket information and generate PDF to save in a bucket
   }
 
-  async updateAsUsed(encryptSaleId: string): Promise<void> {
-    let saleId: number;
-
-    try {
-      saleId = parseInt(decrypt(encryptSaleId));
-      if (isNaN(saleId)) throw new BadRequestException(['Invalid sale ID']);
-    } catch {
-      throw new BadRequestException(['Invalid encrypt text']);
-    }
-
+  async updateAsUsed(saleId: string): Promise<void> {
     const ticketSale = await this.prisma.ticketSale.findUnique({
       where: { id: saleId },
     });
@@ -95,16 +75,7 @@ export class SaleService implements ISaleService {
     });
   }
 
-  async updateAsUnused(encryptSaleId: string): Promise<void> {
-    let saleId: number;
-
-    try {
-      saleId = parseInt(decrypt(encryptSaleId));
-      if (isNaN(saleId)) throw new BadRequestException(['Invalid sale ID']);
-    } catch {
-      throw new BadRequestException(['Invalid encrypt text']);
-    }
-
+  async updateAsUnused(saleId: string): Promise<void> {
     const ticketSale = await this.prisma.ticketSale.findUnique({
       where: { id: saleId },
     });

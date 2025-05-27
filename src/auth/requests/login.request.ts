@@ -1,6 +1,6 @@
 import { IsEmail, IsNotEmpty } from 'class-validator';
 
-export class SignInRequest {
+export class LoginRequest {
   @IsEmail()
   email: string;
 

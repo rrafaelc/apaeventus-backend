@@ -41,7 +41,7 @@ export class TicketService implements ITicketService {
       .sort((a, b) => b.sold - a.sold);
   }
 
-  async findById(id: number): Promise<Ticket | null> {
+  async findById(id: string): Promise<Ticket | null> {
     return this.prisma.ticket.findUnique({
       where: { id },
     });
@@ -63,7 +63,7 @@ export class TicketService implements ITicketService {
     return ticket;
   }
 
-  async countSold(ticketId: number): Promise<number> {
+  async countSold(ticketId: string): Promise<number> {
     const ticketExists = await this.findById(ticketId);
 
     if (!ticketExists) throw new BadRequestException(['Ticket not found']);
@@ -73,7 +73,7 @@ export class TicketService implements ITicketService {
     });
   }
 
-  async countUsed(ticketId: number): Promise<number> {
+  async countUsed(ticketId: string): Promise<number> {
     const ticketExists = await this.findById(ticketId);
 
     if (!ticketExists) throw new BadRequestException(['Ticket not found']);

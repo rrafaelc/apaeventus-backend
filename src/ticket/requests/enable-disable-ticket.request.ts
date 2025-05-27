@@ -2,7 +2,7 @@ import { IsBoolean, IsNumber } from 'class-validator';
 
 export class EnableDisableTicketRequest {
   @IsNumber()
-  id: number;
+  id: string;
 
   @IsBoolean()
   isActive: boolean;

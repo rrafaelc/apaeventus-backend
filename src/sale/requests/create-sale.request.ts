@@ -1,11 +1,11 @@
-import { IsEmail, IsNumber, Min } from 'class-validator';
+import { IsNumber, IsUUID, Min } from 'class-validator';
 
 export class CreateSaleRequest {
-  @IsNumber()
-  ticketId: number;
+  @IsUUID()
+  ticketId: string;
 
-  @IsEmail()
-  customerEmail: string;
+  @IsUUID()
+  userId: string;
 
   @IsNumber()
   @Min(1)

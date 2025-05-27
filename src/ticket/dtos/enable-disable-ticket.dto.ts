@@ -1,4 +1,4 @@
 export class EnableDisableTicketDto {
-  id: number;
+  id: string;
   isActive: boolean;
 }

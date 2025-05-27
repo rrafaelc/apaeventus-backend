@@ -6,10 +6,10 @@ import { TicketResponseDto } from '../dtos/ticket-response.dto';
 export interface ITicketService {
   create(createTicketDto: CreateTicketDto): Promise<Ticket>;
   findAll(): Promise<TicketResponseDto[]>;
-  findById(id: number): Promise<Ticket | null>;
+  findById(id: string): Promise<Ticket | null>;
   enableDisableTicket(
     enableDisableTicketDto: EnableDisableTicketDto,
   ): Promise<Ticket>;
-  countSold(ticketId: number): Promise<number>;
-  countUsed(ticketId: number): Promise<number>;
+  countSold(ticketId: string): Promise<number>;
+  countUsed(ticketId: string): Promise<number>;
 }

@@ -3,9 +3,8 @@ import * as bcrypt from 'bcrypt';
 import { TokenService } from 'src/token/token.service';
 import { UserService } from 'src/user/user.service';
 import { AccessTokenResponseDto } from './dtos/access-token-response.dto';
-import { FirstAccessDto } from './dtos/first-access.dto';
 import { LoginResponseDto } from './dtos/login-response.dto';
-import { SignInDto } from './dtos/sign-in.dto';
+import { LoginDto } from './dtos/login.dto';
 import { IAuthService } from './interfaces/IAuthService';
 
 @Injectable()
@@ -15,7 +14,7 @@ export class AuthService implements IAuthService {
     private readonly tokenService: TokenService,
   ) {}
 
-  async signIn({ email, password }: SignInDto): Promise<LoginResponseDto> {
+  async login({ email, password }: LoginDto): Promise<LoginResponseDto> {
     const user = await this.userService.findByEmail(email);
 
     if (!user) throw new UnauthorizedException(['Invalid credentials']);
@@ -37,8 +36,6 @@ export class AuthService implements IAuthService {
       refreshToken,
     });
 
-    const addresses = await this.userService.findAllUserAddresses(user.id);
-
     return {
       accessToken,
       refreshToken,
@@ -50,18 +47,8 @@ export class AuthService implements IAuthService {
         rg: user.rg,
         cpf: user.cpf,
         cellphone: user.cellphone,
-        refreshToken,
         createdAt: user.createdAt,
         updatedAt: user.updatedAt,
-        addresses: addresses.map((address) => ({
-          id: address.id,
-          street: address.street,
-          number: address.number,
-          neighborhood: address.neighborhood,
-          city: address.city,
-          state: address.state,
-          zipCode: address.zipCode,
-        })),
       },
     };
   }
@@ -87,25 +74,5 @@ export class AuthService implements IAuthService {
     } catch {
       throw new UnauthorizedException(['Invalid refresh token']);
     }
-  }
-
-  async revokeRefreshToken(userId: number): Promise<void> {
-    await this.tokenService.revokeRefreshToken(userId);
-  }
-
-  async firstAccess({ email, password }: FirstAccessDto): Promise<void> {
-    const user = await this.userService.findByEmail(email);
-
-    if (!user) throw new UnauthorizedException(['User not found']);
-
-    if (user.password)
-      throw new UnauthorizedException(['User already has a password']);
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    await this.userService.update({
-      id: user.id,
-      password: hashedPassword,
-    });
   }
 }
