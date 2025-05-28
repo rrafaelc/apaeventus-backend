@@ -18,7 +18,7 @@ export class AuthGuard implements CanActivate {
     const token = this.extractTokenFromHeader(request);
 
     if (!token) {
-      throw new UnauthorizedException('Access token is required');
+      throw new UnauthorizedException(['Access token is required']);
     }
 
     try {
@@ -27,7 +27,7 @@ export class AuthGuard implements CanActivate {
       request.userId = payload.id;
       request.role = payload.role;
     } catch {
-      throw new UnauthorizedException('Invalid access token');
+      throw new UnauthorizedException(['Invalid access token']);
     }
 
     return true;

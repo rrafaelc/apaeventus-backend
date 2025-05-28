@@ -1,16 +1,58 @@
-import { Body, Controller, Post } from '@nestjs/common';
-import { Role, Ticket } from 'generated/prisma';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  UploadedFile,
+  UseInterceptors,
+} from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { Role, Ticket } from '@prisma/client';
 import { Roles } from 'src/user/decorators/roles.decorator';
-import { CreateTicketRequest } from './requests/create-ticket-request';
+import { TicketResponseDto } from './dtos/ticket-response.dto';
+import { CountSoldRequest } from './requests/count-sold.request';
+import { CountUsedRequest } from './requests/count-used.request';
+import { CreateTicketRequest } from './requests/create-ticket.request';
+import { EnableDisableTicketRequest } from './requests/enable-disable-ticket.request';
 import { TicketService } from './ticket.service';
 
 @Controller('ticket')
 export class TicketController {
   constructor(private readonly ticketService: TicketService) {}
 
+  @Get()
+  findAll(): Promise<TicketResponseDto[]> {
+    return this.ticketService.findAll();
+  }
+
   @Roles(Role.ADMIN)
   @Post()
-  create(@Body() createTicketRequest: CreateTicketRequest): Promise<Ticket> {
-    return this.ticketService.create(createTicketRequest);
+  @UseInterceptors(FileInterceptor('imageFile'))
+  create(
+    @Body() createTicketRequest: CreateTicketRequest,
+    @UploadedFile() imageFile?: Express.Multer.File,
+  ) {
+    return this.ticketService.create(createTicketRequest, imageFile);
+  }
+
+  @Roles(Role.ADMIN)
+  @Post('enable-disable')
+  enableDisableTicket(
+    @Body() enableDisableTicketRequest: EnableDisableTicketRequest,
+  ): Promise<Ticket> {
+    return this.ticketService.enableDisableTicket(enableDisableTicketRequest);
+  }
+
+  @Roles(Role.ADMIN)
+  @Get(':ticketId/count-sold')
+  countSold(@Param() countSoldRequest: CountSoldRequest): Promise<number> {
+    return this.ticketService.countSold(countSoldRequest);
+  }
+
+  @Roles(Role.ADMIN)
+  @Get(':ticketId/count-used')
+  countUsed(@Param() countUsedRequest: CountUsedRequest): Promise<number> {
+    return this.ticketService.countUsed(countUsedRequest);
   }
 }

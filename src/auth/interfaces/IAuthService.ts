@@ -1,9 +1,11 @@
 import { AccessTokenResponseDto } from '../dtos/access-token-response.dto';
 import { LoginResponseDto } from '../dtos/login-response.dto';
-import { SignInDto } from '../dtos/sign-in.dto';
+import { LoginDto } from '../dtos/login.dto';
+import { RefreshTokenDto } from '../dtos/refresh-token.dto';
 
 export interface IAuthService {
-  signIn(signInDto: SignInDto): Promise<LoginResponseDto>;
-  refreshAccessToken(refreshToken: string): Promise<AccessTokenResponseDto>;
-  revokeRefreshToken(userId: string): Promise<void>;
+  login(loginDto: LoginDto): Promise<LoginResponseDto>;
+  refreshAccessToken(
+    refreshTokenDto: RefreshTokenDto,
+  ): Promise<AccessTokenResponseDto>;
 }

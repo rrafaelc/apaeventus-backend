@@ -1,12 +1,5 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
-  output   = "../generated/prisma"
 }
 
 datasource db {
@@ -24,37 +17,57 @@ model User {
   name         String
   email        String   @unique
   password     String
+  rg           String?
+  cpf          String?  @unique
+  cellphone    String?
   refreshToken String?
   role         Role     @default(USER)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  userTickets UserTicket[]
+  addresses     Address[]
+  boughtTickets TicketSale[] @relation("UserPurchases")
 }
 
 model Ticket {
   id          String   @id @default(uuid())
   title       String
   description String
+  eventDate   DateTime
   imageUrl    String?
-  expiresAt   DateTime
   quantity    Int
+  price       Float
+  isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  userTickets UserTicket[]
+  sales TicketSale[]
 }
 
-model UserTicket {
-  id        String   @id @default(uuid())
-  userId    String
-  ticketId  String
-  qrCode    String
-  used      Boolean  @default(false)
-  createdAt DateTime @default(now())
+model TicketSale {
+  id           String   @id @default(uuid())
+  userId       String
+  ticketId     String
+  used         Boolean  @default(false)
+  pdfUrl       String?
+  qrCodeUrl    String?
+  qrCodeBase64 String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
-  user   User   @relation(fields: [userId], references: [id])
-  ticket Ticket @relation(fields: [ticketId], references: [id])
+  customer User   @relation("UserPurchases", fields: [userId], references: [id])
+  ticket   Ticket @relation(fields: [ticketId], references: [id])
+}
 
-  @@unique([userId, ticketId]) // Um ticket por usuário (remova se quiser múltiplos iguais)
+model Address {
+  id           String @id @default(uuid())
+  street       String
+  number       Int
+  neighborhood String
+  city         String
+  state        String
+  zipCode      String
+  userId       String
+
+  user User @relation(fields: [userId], references: [id])
 }

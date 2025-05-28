@@ -5,7 +5,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { Role } from 'generated/prisma';
+import { Role } from '@prisma/client';
 import { AuthenticatedRequest } from 'src/auth/requests/authenticated-request';
 import { TokenService } from 'src/token/token.service';
 import { ROLES_KEY } from '../decorators/roles.decorator';
@@ -31,7 +31,7 @@ export class RolesGuard implements CanActivate {
     const token = this.extractTokenFromHeader(request);
 
     if (!token) {
-      throw new UnauthorizedException('Access token is required');
+      throw new UnauthorizedException(['Access token is required']);
     }
 
     try {
@@ -42,7 +42,7 @@ export class RolesGuard implements CanActivate {
 
       return requiredRoles.some((role) => request.role === role);
     } catch {
-      throw new UnauthorizedException('Invalid access token');
+      throw new UnauthorizedException(['Invalid access token']);
     }
   }
 
