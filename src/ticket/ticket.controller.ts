@@ -24,11 +24,13 @@ export class TicketController {
     return this.ticketService.enableDisableTicket(enableDisableTicketRequest);
   }
 
+  @Roles(Role.ADMIN)
   @Get(':ticketId/count-sold')
   countSold(@Param() countSoldRequest: CountSoldRequest): Promise<number> {
     return this.ticketService.countSold(countSoldRequest);
   }
 
+  @Roles(Role.ADMIN)
   @Get(':ticketId/count-used')
   countUsed(@Param() countUsedRequest: CountUsedRequest): Promise<number> {
     return this.ticketService.countUsed(countUsedRequest);

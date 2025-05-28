@@ -9,6 +9,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { Role } from '@prisma/client';
+import { AuthGuard } from 'src/auth/guards/auth.guard';
 import { AuthenticatedRequest } from 'src/auth/requests/authenticated-request';
 import { Roles } from 'src/user/decorators/roles.decorator';
 import { CreateSaleRequest } from './requests/create-sale.request';
@@ -20,7 +21,7 @@ import { SaleService } from './sale.service';
 export class SaleController {
   constructor(private readonly saleService: SaleService) {}
 
-  @UseGuards()
+  @UseGuards(AuthGuard)
   @Post()
   create(
     @Request() { userId }: AuthenticatedRequest,
