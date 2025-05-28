@@ -12,6 +12,8 @@ import { Role } from '@prisma/client';
 import { AuthenticatedRequest } from 'src/auth/requests/authenticated-request';
 import { Roles } from 'src/user/decorators/roles.decorator';
 import { CreateSaleRequest } from './requests/create-sale.request';
+import { UpdateAsUnusedRequest } from './requests/update-as-unused.request';
+import { UpdateAsUsedRequest } from './requests/update-as-used.request';
 import { SaleService } from './sale.service';
 
 @Controller('sale')
@@ -36,14 +38,18 @@ export class SaleController {
   @Roles(Role.ADMIN)
   @HttpCode(HttpStatus.OK)
   @Post('set-used')
-  updateAsUsed(@Body('saleId') saleId: string): Promise<void> {
-    return this.saleService.updateAsUsed(saleId);
+  updateAsUsed(
+    @Body() updateAsUsedRequest: UpdateAsUsedRequest,
+  ): Promise<void> {
+    return this.saleService.updateAsUsed(updateAsUsedRequest);
   }
 
   @Roles(Role.ADMIN)
   @HttpCode(HttpStatus.OK)
   @Post('set-unused')
-  updateAsUnused(@Body('saleId') saleId: string): Promise<void> {
-    return this.saleService.updateAsUnused(saleId);
+  updateAsUnused(
+    @Body() updateAsUnusedRequest: UpdateAsUnusedRequest,
+  ): Promise<void> {
+    return this.saleService.updateAsUnused(updateAsUnusedRequest);
   }
 }

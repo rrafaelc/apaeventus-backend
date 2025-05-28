@@ -37,7 +37,7 @@ CREATE TABLE "Ticket" (
 -- CreateTable
 CREATE TABLE "TicketSale" (
     "id" TEXT NOT NULL,
-    "customerId" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
     "ticketId" TEXT NOT NULL,
     "used" BOOLEAN NOT NULL DEFAULT false,
     "pdfUrl" TEXT,
@@ -70,7 +70,7 @@ CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 CREATE UNIQUE INDEX "User_cpf_key" ON "User"("cpf");
 
 -- AddForeignKey
-ALTER TABLE "TicketSale" ADD CONSTRAINT "TicketSale_customerId_fkey" FOREIGN KEY ("customerId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "TicketSale" ADD CONSTRAINT "TicketSale_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "TicketSale" ADD CONSTRAINT "TicketSale_ticketId_fkey" FOREIGN KEY ("ticketId") REFERENCES "Ticket"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

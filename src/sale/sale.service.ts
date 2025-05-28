@@ -6,6 +6,8 @@ import { PrismaService } from 'src/database/prisma.service';
 import { TicketService } from 'src/ticket/ticket.service';
 import { UserService } from 'src/user/user.service';
 import { CreateSaleDto } from './dtos/create-sale.dto';
+import { UpdateAsUnusedDto } from './dtos/update-as-unused.dto';
+import { UpdateAsUsedDto } from './dtos/update-as-used.dto';
 import { ISaleService } from './interfaces/ISaleService';
 import { generatePdf } from './utils/generatePdf';
 
@@ -59,7 +61,7 @@ export class SaleService implements ISaleService {
     // TODO: Send email to customer with ticket information and generate PDF to save in a bucket
   }
 
-  async updateAsUsed(saleId: string): Promise<void> {
+  async updateAsUsed({ saleId }: UpdateAsUsedDto): Promise<void> {
     const ticketSale = await this.prisma.ticketSale.findUnique({
       where: { id: saleId },
     });
@@ -75,7 +77,7 @@ export class SaleService implements ISaleService {
     });
   }
 
-  async updateAsUnused(saleId: string): Promise<void> {
+  async updateAsUnused({ saleId }: UpdateAsUnusedDto): Promise<void> {
     const ticketSale = await this.prisma.ticketSale.findUnique({
       where: { id: saleId },
     });
@@ -101,7 +103,9 @@ export class SaleService implements ISaleService {
     if (ticket.eventDate < new Date())
       throw new BadRequestException(['Ticket event date is expired']);
 
-    const ticketSold = await this.ticketService.countSold(ticket.id);
+    const ticketSold = await this.ticketService.countSold({
+      ticketId: ticket.id,
+    });
 
     if (ticketSold >= ticket.quantity)
       throw new BadRequestException(['Ticket all sold out']);

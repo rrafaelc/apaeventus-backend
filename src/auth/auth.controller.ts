@@ -18,7 +18,7 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @Post('refresh-token')
   async refreshToken(
-    @Body() { refreshToken }: RefreshTokenRequest,
+    @Body() refreshToken: RefreshTokenRequest,
   ): Promise<AccessTokenResponseDto> {
     return this.authService.refreshAccessToken(refreshToken);
   }

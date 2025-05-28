@@ -5,6 +5,7 @@ import { UserService } from 'src/user/user.service';
 import { AccessTokenResponseDto } from './dtos/access-token-response.dto';
 import { LoginResponseDto } from './dtos/login-response.dto';
 import { LoginDto } from './dtos/login.dto';
+import { RefreshTokenDto } from './dtos/refresh-token.dto';
 import { IAuthService } from './interfaces/IAuthService';
 
 @Injectable()
@@ -53,9 +54,9 @@ export class AuthService implements IAuthService {
     };
   }
 
-  async refreshAccessToken(
-    refreshToken: string,
-  ): Promise<AccessTokenResponseDto> {
+  async refreshAccessToken({
+    refreshToken,
+  }: RefreshTokenDto): Promise<AccessTokenResponseDto> {
     try {
       const payload = await this.tokenService.verifyRefreshToken(refreshToken);
       const id = payload.id;
