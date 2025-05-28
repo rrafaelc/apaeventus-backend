@@ -10,13 +10,40 @@
 			"name": "User",
 			"item": [
 				{
+					"name": "Profile",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/user/profile",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"user",
+								"profile"
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "Create",
 					"request": {
 						"method": "POST",
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"name\": \"Nome\",\r\n    \"email\": \"email2@email.com\",\r\n    \"password\": \"12345678\"\r\n}",
+							"raw": "{\r\n    \"name\": \"Rafael\",\r\n    \"email\": \"rafael@email.com\",\r\n    \"password\": \"12345678\",\r\n    \"rg\": \"00000000-0\",\r\n    \"cpf\": \"36583928000\",\r\n    \"cellphone\": \"19999999999\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -34,41 +61,6 @@
 						}
 					},
 					"response": []
-				},
-				{
-					"name": "Profile",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJlbWFpbEBlbWFpbC5jb20iLCJuYW1lIjoiTm9tZSIsImlhdCI6MTc0NzUzMzIyNywiZXhwIjoxNzQ3NTMzNTI3fQ.KjK19QSoZBP-ixkey4zcQDmrHV4IZQeMXDzjXU-6OAY",
-									"type": "string"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJlbWFpbEBlbWFpbC5jb20iLCJuYW1lIjoiTm9tZSIsImlhdCI6MTc0NzE3NzU4OSwiZXhwIjoxNzQ3MTc3NjQ5fQ.xoXHjWeU2re-lr2K8uFMDJ83a0AjQhhKH3YoQUsj3m8",
-								"type": "text",
-								"disabled": true
-							}
-						],
-						"url": {
-							"raw": "{{base_url}}/user/profile",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"user",
-								"profile"
-							]
-						}
-					},
-					"response": []
 				}
 			]
 		},
@@ -76,13 +68,33 @@
 			"name": "Auth",
 			"item": [
 				{
-					"name": "SignIn",
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Extrai o corpo da resposta\r",
+									"let response = pm.response.json();\r",
+									"\r",
+									"// Salva os tokens como variáveis de ambiente\r",
+									"pm.globals.set(\"accessToken\", response.accessToken);\r",
+									"pm.globals.set(\"refreshToken\", response.refreshToken);\r",
+									"\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
 					"request": {
 						"method": "POST",
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"name\": \"Nome\",\r\n    \"email\": \"email@email.com\",\r\n    \"password\": \"12345678\"\r\n}",
+							"raw": "{\r\n    \"email\": \"admin@email.com\",\r\n    \"password\": \"admin\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -90,13 +102,13 @@
 							}
 						},
 						"url": {
-							"raw": "{{base_url}}/auth/signin",
+							"raw": "{{base_url}}/auth/login",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"auth",
-								"signin"
+								"login"
 							]
 						}
 					},
@@ -104,6 +116,25 @@
 				},
 				{
 					"name": "Refresh Token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Extrai o corpo da resposta\r",
+									"let response = pm.response.json();\r",
+									"\r",
+									"// Salva os tokens como variáveis de ambiente\r",
+									"pm.globals.set(\"accessToken\", response.accessToken);\r",
+									"\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
 					"request": {
 						"method": "POST",
 						"header": [
@@ -115,7 +146,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"refreshToken\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNzQ3MjQzMjE3LCJleHAiOjE3NDc4NDgwMTd9.rj_fX6aBE1---TZ60Zn_qypMdHYgPGBZy7GK5yvRtTY\"\r\n}",
+							"raw": "{\r\n    \"refreshToken\": \"{{refreshToken}}\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -134,36 +165,288 @@
 						}
 					},
 					"response": []
+				}
+			]
+		},
+		{
+			"name": "Admin/Reader",
+			"item": [
+				{
+					"name": "Set Ticket to Used",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"saleId\": \"b989e4be-2ac8-469e-86b4-ecb4c1c90962\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/sale/set-used",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"sale",
+								"set-used"
+							]
+						}
+					},
+					"response": []
 				},
 				{
-					"name": "Revoke Token",
+					"name": "Set Ticket to Unused",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"saleId\": \"b989e4be-2ac8-469e-86b4-ecb4c1c90962\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/sale/set-unused",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"sale",
+								"set-unused"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Ticket",
+			"item": [
+				{
+					"name": "Get All",
 					"request": {
 						"auth": {
-							"type": "bearer",
-							"bearer": [
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/ticket",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ticket"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
 								{
-									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJlbWFpbEBlbWFpbC5jb20iLCJuYW1lIjoiTm9tZSIsImlhdCI6MTc0NzUzMzIyNywiZXhwIjoxNzQ3NTMzNTI3fQ.KjK19QSoZBP-ixkey4zcQDmrHV4IZQeMXDzjXU-6OAY",
-									"type": "string"
+									"key": "title",
+									"value": "Titulo do evento 1",
+									"type": "text"
+								},
+								{
+									"key": "description",
+									"value": "Descrição do evento 1",
+									"type": "text"
+								},
+								{
+									"key": "eventDate",
+									"value": "2025-06-20T19:00:00",
+									"type": "text"
+								},
+								{
+									"key": "quantity",
+									"value": "100",
+									"type": "text"
+								},
+								{
+									"key": "price",
+									"value": "50",
+									"type": "text"
+								},
+								{
+									"key": "imageFile",
+									"type": "file",
+									"src": "/C:/Users/rafae/Pictures/apae.png"
 								}
 							]
+						},
+						"url": {
+							"raw": "{{base_url}}/ticket",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ticket"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Count Sold",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/ticket/b989e4be-2ac8-469e-86b4-ecb4c1c90962/count-sold",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ticket",
+								"b989e4be-2ac8-469e-86b4-ecb4c1c90962",
+								"count-sold"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Count Used",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/ticket/b989e4be-2ac8-469e-86b4-ecb4c1c90962/count-used",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ticket",
+								"b989e4be-2ac8-469e-86b4-ecb4c1c90962",
+								"count-used"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Enable/Disable",
+					"request": {
+						"auth": {
+							"type": "noauth"
 						},
 						"method": "POST",
 						"header": [
 							{
 								"key": "Authorization",
-								"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJlbWFpbEBlbWFpbC5jb20iLCJuYW1lIjoiTm9tZSIsImlhdCI6MTc0NzE3NzU4OSwiZXhwIjoxNzQ3MTc3NjQ5fQ.xoXHjWeU2re-lr2K8uFMDJ83a0AjQhhKH3YoQUsj3m8",
+								"value": "Bearer {{accessToken}}",
 								"type": "text"
 							}
 						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"id\": 1,\r\n    \"isActive\": false\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
 						"url": {
-							"raw": "{{base_url}}/auth/revoke-token",
+							"raw": "{{base_url}}/ticket/enable-disable",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"auth",
-								"revoke-token"
+								"ticket",
+								"enable-disable"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Sale",
+			"item": [
+				{
+					"name": "Create",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"ticketId\": 1,\r\n    \"customerEmail\": \"cliente@email.com\",\r\n    \"quantity\": 2\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/sale",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"sale"
 							]
 						}
 					},
