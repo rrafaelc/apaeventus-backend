@@ -1,9 +1,19 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  UploadedFile,
+  UseInterceptors,
+} from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { Role, Ticket } from '@prisma/client';
 import { Roles } from 'src/user/decorators/roles.decorator';
 import { TicketResponseDto } from './dtos/ticket-response.dto';
 import { CountSoldRequest } from './requests/count-sold.request';
 import { CountUsedRequest } from './requests/count-used.request';
+import { CreateTicketRequest } from './requests/create-ticket.request';
 import { EnableDisableTicketRequest } from './requests/enable-disable-ticket.request';
 import { TicketService } from './ticket.service';
 
@@ -14,6 +24,16 @@ export class TicketController {
   @Get()
   findAll(): Promise<TicketResponseDto[]> {
     return this.ticketService.findAll();
+  }
+
+  @Roles(Role.ADMIN)
+  @Post()
+  @UseInterceptors(FileInterceptor('imageFile'))
+  create(
+    @Body() createTicketRequest: CreateTicketRequest,
+    @UploadedFile() imageFile?: Express.Multer.File,
+  ) {
+    return this.ticketService.create(createTicketRequest, imageFile);
   }
 
   @Roles(Role.ADMIN)

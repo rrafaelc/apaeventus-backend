@@ -1,6 +1,12 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { Ticket } from '@prisma/client';
 import * as dayjs from 'dayjs';
+import * as fs from 'fs';
+import * as path from 'path';
 import { PrismaService } from 'src/database/prisma.service';
 import { CountSoldDto } from './dtos/count-sold.dto';
 import { CountUsedDto } from './dtos/count-used.dto';
@@ -13,12 +19,60 @@ import { ITicketService } from './interfaces/ITicketService';
 export class TicketService implements ITicketService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(data: CreateTicketDto): Promise<Ticket> {
+  async create(
+    data: CreateTicketDto,
+    imageFile?: Express.Multer.File,
+  ): Promise<Ticket> {
     this.validationIsEventExpired(data.eventDate);
 
-    const ticket = await this.prisma.ticket.create({ data });
+    let imageUrl: string | undefined;
+    let filePath: string | undefined;
 
-    return ticket;
+    if (imageFile) {
+      const allowedMimeTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+      if (!allowedMimeTypes.includes(imageFile.mimetype)) {
+        throw new BadRequestException([
+          'Invalid image format. Only JPEG and PNG are allowed',
+        ]);
+      }
+
+      const maxSize = 10 * 1024 * 1024; // 10MB
+      if (imageFile.size > maxSize) {
+        throw new BadRequestException([
+          'The image size must be less than 10MB',
+        ]);
+      }
+
+      const uploadsDir = path.resolve(__dirname, '..', 'uploads');
+      if (!fs.existsSync(uploadsDir)) {
+        fs.mkdirSync(uploadsDir, { recursive: true });
+      }
+      const fileExt = path.extname(imageFile.originalname);
+      const fileName = `${Date.now()}-${Math.round(Math.random() * 1e9)}${fileExt}`;
+      filePath = path.join(uploadsDir, fileName);
+
+      fs.writeFileSync(filePath, imageFile.buffer);
+
+      imageUrl = `uploads/${fileName}`;
+    }
+
+    try {
+      const ticket = await this.prisma.ticket.create({
+        data: {
+          ...data,
+          eventDate: new Date(data.eventDate),
+          quantity: Number(data.quantity),
+          price: Number(data.price),
+          ...(imageUrl && { imageUrl }),
+        },
+      });
+      return ticket;
+    } catch (error) {
+      if (filePath && fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+      }
+      throw new InternalServerErrorException([error.message]);
+    }
   }
 
   async findAll(): Promise<TicketResponseDto[]> {

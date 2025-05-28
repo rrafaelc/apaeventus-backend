@@ -6,7 +6,10 @@ import { EnableDisableTicketDto } from '../dtos/enable-disable-ticket.dto';
 import { TicketResponseDto } from '../dtos/ticket-response.dto';
 
 export interface ITicketService {
-  create(createTicketDto: CreateTicketDto): Promise<Ticket>;
+  create(
+    createTicketDto: CreateTicketDto,
+    imageFile?: Express.Multer.File,
+  ): Promise<Ticket>;
   findAll(): Promise<TicketResponseDto[]>;
   findById(id: string): Promise<Ticket | null>;
   enableDisableTicket(
