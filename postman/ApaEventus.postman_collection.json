@@ -433,7 +433,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"ticketId\": 1,\r\n    \"customerEmail\": \"cliente@email.com\",\r\n    \"quantity\": 2\r\n}",
+							"raw": "{\r\n    \"ticketId\": \"fcd1e921-f706-442d-89be-8b857d1463bf\",\r\n    \"quantity\": 2\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"

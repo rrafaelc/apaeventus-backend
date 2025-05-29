@@ -23,7 +23,7 @@ export class SaleService implements ISaleService {
     const ticket = await this.ticketService.findById(ticketId);
     if (!ticket) throw new BadRequestException(['Ticket not found']);
 
-    const user = await this.userService.findByEmail(userId);
+    const user = await this.userService.findById(userId);
     if (!user) throw new BadRequestException(['User not found']);
 
     await this.ticketValidation(ticket, quantity);
