@@ -14,7 +14,7 @@ Este projeto é uma API desenvolvida em [NestJS](https://nestjs.com/) para geren
 1. **Clone o repositório e acesse a pasta do projeto:**
 
    ```bash
-   git clone git@github.com:rrafaelc/apaeventus-backend.git
+   git clone https://github.com/rrafaelc/apaeventus-backend.git
    cd apaeventus-backend
    ```
 
@@ -26,37 +26,28 @@ Este projeto é uma API desenvolvida em [NestJS](https://nestjs.com/) para geren
 
 3. **Configure o banco de dados PostgreSQL:**
 
-   - Crie um banco chamado `apaeventus` no seu PostgreSQL.
    - Configure a variável de ambiente `DATABASE_URL` no arquivo `.env`.
    - Você pode usar o arquivo `.env.example` como base para criar o seu `.env`.
 
-4. **Rode as migrations do Prisma para criar as tabelas:**
+4. **Rode as migrations do Prisma para criar as tabelas e os dados inicias (seed):**
 
    ```bash
    npx prisma migrate dev
    ```
 
-5. **Popule o banco de dados com dados iniciais (seed):**
+5. **Caso precise resetar o banco de dados, você pode rodar:** 
 
-   - Você pode rodar:
-
-     ```bash
-     npx prisma migrate reset
-     ```
-
-     ou
-
-     ```bash
-     npx prisma db seed
-     ```
+    ```bash
+    npx prisma migrate reset
+    ```     
 
 6. **Se o VS Code pedir para instalar extensões recomendadas, aceite e instale.**
 
-7. **Inicie a aplicação em modo desenvolvimento:**
+7. **Inicie a aplicação:**
 
    ```bash
-   npm run start:dev
-   ```
+   npm start
+   ```   
 
    A API estará disponível em [http://localhost:3333](http://localhost:3333).
 
