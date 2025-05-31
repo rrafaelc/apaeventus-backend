@@ -445,6 +445,33 @@
 			"name": "Ingresso",
 			"item": [
 				{
+					"name": "Buscar um",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/sale/3a1729f5-dceb-4cd9-ae46-5112a89de347",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"sale",
+								"3a1729f5-dceb-4cd9-ae46-5112a89de347"
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "Comprar",
 					"request": {
 						"auth": {
