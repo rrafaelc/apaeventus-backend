@@ -6,6 +6,7 @@ import { UserService } from 'src/user/user.service';
 import { AccessTokenResponseDto } from './dtos/access-token-response.dto';
 import { LoginResponseDto } from './dtos/login-response.dto';
 import { LoginDto } from './dtos/login.dto';
+import { LogoutDto } from './dtos/logout.dto';
 import { RefreshTokenDto } from './dtos/refresh-token.dto';
 import { IAuthService } from './interfaces/IAuthService';
 
@@ -54,6 +55,17 @@ export class AuthService implements IAuthService {
         updatedAt: user.updatedAt,
       },
     };
+  }
+
+  async logout({ userId }: LogoutDto): Promise<void> {
+    const user = await this.userService.findById(userId);
+
+    if (!user) throw new UnauthorizedException(['User not found']);
+
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: { refreshToken: null },
+    });
   }
 
   async refreshAccessToken({
