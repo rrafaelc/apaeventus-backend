@@ -4,6 +4,7 @@ import {
   Get,
   Param,
   Post,
+  Query,
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
@@ -15,6 +16,7 @@ import { CountSoldRequest } from './requests/count-sold.request';
 import { CountUsedRequest } from './requests/count-used.request';
 import { CreateTicketRequest } from './requests/create-ticket.request';
 import { EnableDisableTicketRequest } from './requests/enable-disable-ticket.request';
+import { FindAllRequest } from './requests/find-all.request';
 import { FindTicketByIdRequest } from './requests/find-ticket-by-id.request';
 import { TicketService } from './ticket.service';
 
@@ -23,8 +25,11 @@ export class TicketController {
   constructor(private readonly ticketService: TicketService) {}
 
   @Get()
-  findAll(): Promise<TicketResponseDto[]> {
-    return this.ticketService.findAll();
+  findAll(
+    @Query()
+    findAllRequest: FindAllRequest,
+  ): Promise<TicketResponseDto[]> {
+    return this.ticketService.findAll(findAllRequest);
   }
 
   @Get(':id')

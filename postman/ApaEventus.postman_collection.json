@@ -172,6 +172,62 @@
 			"name": "Admin/Leitor",
 			"item": [
 				{
+					"name": "Ingresso vendidos",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/ticket/b989e4be-2ac8-469e-86b4-ecb4c1c90962/count-sold",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ticket",
+								"b989e4be-2ac8-469e-86b4-ecb4c1c90962",
+								"count-sold"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Ingresso usados",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/ticket/b989e4be-2ac8-469e-86b4-ecb4c1c90962/count-used",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ticket",
+								"b989e4be-2ac8-469e-86b4-ecb4c1c90962",
+								"count-used"
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "Criar evento",
 					"request": {
 						"method": "POST",
@@ -230,62 +286,6 @@
 					"response": []
 				},
 				{
-					"name": "Ingresso vendidos",
-					"request": {
-						"auth": {
-							"type": "noauth"
-						},
-						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{accessToken}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{base_url}}/ticket/b989e4be-2ac8-469e-86b4-ecb4c1c90962/count-sold",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"ticket",
-								"b989e4be-2ac8-469e-86b4-ecb4c1c90962",
-								"count-sold"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Ingresso usados",
-					"request": {
-						"auth": {
-							"type": "noauth"
-						},
-						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{accessToken}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{base_url}}/ticket/b989e4be-2ac8-469e-86b4-ecb4c1c90962/count-used",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"ticket",
-								"b989e4be-2ac8-469e-86b4-ecb4c1c90962",
-								"count-used"
-							]
-						}
-					},
-					"response": []
-				},
-				{
 					"name": "Habilitar ou Desabilitar evento",
 					"request": {
 						"auth": {
@@ -301,7 +301,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"id\": 1,\r\n    \"isActive\": false\r\n}",
+							"raw": "{\r\n    \"id\": \"fcd1e921-f706-442d-89be-8b857d1463bf\",\r\n    \"isActive\": false\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -401,12 +401,18 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{base_url}}/ticket",
+							"raw": "{{base_url}}/ticket?showInactive=false",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"ticket"
+							],
+							"query": [
+								{
+									"key": "showInactive",
+									"value": "false"
+								}
 							]
 						}
 					},

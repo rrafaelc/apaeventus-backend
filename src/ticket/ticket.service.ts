@@ -12,6 +12,7 @@ import { CountSoldDto } from './dtos/count-sold.dto';
 import { CountUsedDto } from './dtos/count-used.dto';
 import { CreateTicketDto } from './dtos/create-ticket.dto';
 import { EnableDisableTicketDto } from './dtos/enable-disable-ticket.dto';
+import { FindAllDto } from './dtos/find-all.dto';
 import { FindTicketByIdDto } from './dtos/find-ticket-by-id.dto';
 import { TicketResponseDto } from './dtos/ticket-response.dto';
 import { ITicketService } from './interfaces/ITicketService';
@@ -76,10 +77,10 @@ export class TicketService implements ITicketService {
     }
   }
 
-  async findAll(): Promise<TicketResponseDto[]> {
+  async findAll({ showInactive }: FindAllDto): Promise<TicketResponseDto[]> {
     const tickets = await this.prisma.ticket.findMany({
       where: {
-        isActive: true,
+        isActive: showInactive === 'true' ? undefined : true,
       },
     });
 
