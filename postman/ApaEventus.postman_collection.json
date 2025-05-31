@@ -445,6 +445,32 @@
 			"name": "Ingresso",
 			"item": [
 				{
+					"name": "Buscar todos",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/sale",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"sale"
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "Buscar um",
 					"request": {
 						"auth": {

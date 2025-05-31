@@ -6,6 +6,7 @@ import { PrismaService } from 'src/database/prisma.service';
 import { TicketService } from 'src/ticket/ticket.service';
 import { UserService } from 'src/user/user.service';
 import { CreateSaleDto } from './dtos/create-sale.dto';
+import { FindAllSaleDto } from './dtos/find-all-sale.dto';
 import { FindSaleByIdDto } from './dtos/find-sale-by-id.dto';
 import { TicketSaleResponse } from './dtos/ticket-sale.response';
 import { UpdateAsUnusedDto } from './dtos/update-as-unused.dto';
@@ -61,6 +62,26 @@ export class SaleService implements ISaleService {
     }
 
     // TODO: Send email to customer with ticket information and generate PDF to save in a bucket
+  }
+
+  async find({ userId }: FindAllSaleDto): Promise<TicketSaleResponse[]> {
+    const ticketSales = await this.prisma.ticketSale.findMany({
+      where: { userId },
+      include: {
+        ticket: true,
+      },
+    });
+
+    return ticketSales.map((ticketSale) => ({
+      id: ticketSale.id,
+      used: ticketSale.used,
+      pdfUrl: ticketSale.pdfUrl,
+      qrCodeUrl: ticketSale.qrCodeUrl,
+      qrCodeBase64: ticketSale.qrCodeBase64,
+      createdAt: ticketSale.createdAt,
+      updatedAt: ticketSale.updatedAt,
+      ticket: ticketSale.ticket,
+    }));
   }
 
   async findOne({ id }: FindSaleByIdDto): Promise<TicketSaleResponse> {

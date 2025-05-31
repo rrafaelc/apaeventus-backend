@@ -41,6 +41,16 @@ export class SaleController {
   }
 
   @UseGuards(AuthGuard)
+  @Get()
+  find(
+    @Request() { userId }: AuthenticatedRequest,
+  ): Promise<TicketSaleResponse[]> {
+    if (!userId) throw new BadRequestException(['UserId not found in request']);
+
+    return this.saleService.find({ userId });
+  }
+
+  @UseGuards(AuthGuard)
   @Get(':id')
   findOne(
     @Param() findSaleByIdRequest: FindSaleByIdRequest,
