@@ -1,4 +1,6 @@
 import { Ticket, User } from '@prisma/client';
+import * as dayjs from 'dayjs';
+import 'dayjs/locale/pt-br';
 import { readFileSync } from 'fs';
 import { parsePhoneNumberFromString } from 'libphonenumber-js';
 import { PDFDocument } from 'pdf-lib';
@@ -22,16 +24,19 @@ export const generatePdf = async (
     height: 100,
   });
 
-  page.drawText(`Ingresso: ${ticket.title}`, { x: 50, y: 450, size: 18 });
+  page.drawText(`Evento: ${ticket.title}`, { x: 50, y: 450, size: 18 });
 
-  page.drawText(`Vendedor: ${user.name}`, { x: 50, y: 420, size: 14 });
-  page.drawText(`Email: ${user.email}`, {
+  page.drawText(`Data do evento`, { x: 50, y: 420, size: 14 });
+  page.drawText(dayjs(ticket.eventDate).locale('pt-br').format('DD/MM/YYYY'), {
     x: 50,
     y: 405,
     size: 10,
   });
+  const eventDate = dayjs(ticket.eventDate).locale('pt-br');
+  const dayOfWeek = eventDate.format('dddd');
+  const time = eventDate.format('HH:mm');
   page.drawText(
-    `Celular: ${user.cellphone ? formatPhoneNumber(user.cellphone) : 'N/A'}`,
+    `${dayOfWeek.charAt(0).toUpperCase() + dayOfWeek.slice(1)} às ${time}`,
     {
       x: 50,
       y: 392,
@@ -39,7 +44,7 @@ export const generatePdf = async (
     },
   );
 
-  page.drawText(`Cliente: ${user.name}`, { x: 50, y: 362, size: 14 });
+  page.drawText(`Nome: ${user.name}`, { x: 50, y: 362, size: 14 });
   page.drawText(`Email: ${user.email}`, {
     x: 50,
     y: 347,
