@@ -6,6 +6,9 @@ import { PrismaService } from 'src/database/prisma.service';
 import { TicketService } from 'src/ticket/ticket.service';
 import { UserService } from 'src/user/user.service';
 import { CreateSaleDto } from './dtos/create-sale.dto';
+import { FindAllSaleDto } from './dtos/find-all-sale.dto';
+import { FindSaleByIdDto } from './dtos/find-sale-by-id.dto';
+import { TicketSaleResponse } from './dtos/ticket-sale.response';
 import { UpdateAsUnusedDto } from './dtos/update-as-unused.dto';
 import { UpdateAsUsedDto } from './dtos/update-as-used.dto';
 import { ISaleService } from './interfaces/ISaleService';
@@ -20,7 +23,7 @@ export class SaleService implements ISaleService {
   ) {}
 
   async create({ ticketId, userId, quantity }: CreateSaleDto): Promise<void> {
-    const ticket = await this.ticketService.findById(ticketId);
+    const ticket = await this.ticketService.findOne({ id: ticketId });
     if (!ticket) throw new BadRequestException(['Ticket not found']);
 
     const user = await this.userService.findById(userId);
@@ -59,6 +62,48 @@ export class SaleService implements ISaleService {
     }
 
     // TODO: Send email to customer with ticket information and generate PDF to save in a bucket
+  }
+
+  async find({ userId }: FindAllSaleDto): Promise<TicketSaleResponse[]> {
+    const ticketSales = await this.prisma.ticketSale.findMany({
+      where: { userId },
+      include: {
+        ticket: true,
+      },
+    });
+
+    return ticketSales.map((ticketSale) => ({
+      id: ticketSale.id,
+      used: ticketSale.used,
+      pdfUrl: ticketSale.pdfUrl,
+      qrCodeUrl: ticketSale.qrCodeUrl,
+      qrCodeBase64: ticketSale.qrCodeBase64,
+      createdAt: ticketSale.createdAt,
+      updatedAt: ticketSale.updatedAt,
+      ticket: ticketSale.ticket,
+    }));
+  }
+
+  async findOne({ id }: FindSaleByIdDto): Promise<TicketSaleResponse> {
+    const ticketSale = await this.prisma.ticketSale.findUnique({
+      where: { id },
+      include: {
+        ticket: true,
+      },
+    });
+
+    if (!ticketSale) throw new BadRequestException(['TicketSale not found']);
+
+    return {
+      id: ticketSale.id,
+      used: ticketSale.used,
+      pdfUrl: ticketSale.pdfUrl,
+      qrCodeUrl: ticketSale.qrCodeUrl,
+      qrCodeBase64: ticketSale.qrCodeBase64,
+      createdAt: ticketSale.createdAt,
+      updatedAt: ticketSale.updatedAt,
+      ticket: ticketSale.ticket,
+    };
   }
 
   async updateAsUsed({ saleId }: UpdateAsUsedDto): Promise<void> {

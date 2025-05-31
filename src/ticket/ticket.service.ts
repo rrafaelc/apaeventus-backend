@@ -12,6 +12,8 @@ import { CountSoldDto } from './dtos/count-sold.dto';
 import { CountUsedDto } from './dtos/count-used.dto';
 import { CreateTicketDto } from './dtos/create-ticket.dto';
 import { EnableDisableTicketDto } from './dtos/enable-disable-ticket.dto';
+import { FindAllDto } from './dtos/find-all.dto';
+import { FindTicketByIdDto } from './dtos/find-ticket-by-id.dto';
 import { TicketResponseDto } from './dtos/ticket-response.dto';
 import { ITicketService } from './interfaces/ITicketService';
 
@@ -75,10 +77,10 @@ export class TicketService implements ITicketService {
     }
   }
 
-  async findAll(): Promise<TicketResponseDto[]> {
+  async findAll({ showInactive }: FindAllDto): Promise<TicketResponseDto[]> {
     const tickets = await this.prisma.ticket.findMany({
       where: {
-        isActive: true,
+        isActive: showInactive === 'true' ? undefined : true,
       },
     });
 
@@ -97,17 +99,25 @@ export class TicketService implements ITicketService {
       .sort((a, b) => b.sold - a.sold);
   }
 
-  async findById(id: string): Promise<Ticket | null> {
-    return this.prisma.ticket.findUnique({
+  async findOne({ id }: FindTicketByIdDto): Promise<TicketResponseDto> {
+    const ticket = await this.prisma.ticket.findUnique({
       where: { id },
     });
+
+    if (!ticket) throw new BadRequestException(['Ticket not found']);
+
+    const sold = await this.prisma.ticketSale.count({
+      where: { ticketId: ticket.id },
+    });
+
+    return { ...ticket, sold };
   }
 
   async enableDisableTicket({
     id,
     isActive,
   }: EnableDisableTicketDto): Promise<Ticket> {
-    const ticketExists = await this.findById(id);
+    const ticketExists = await this.findOne({ id });
 
     if (!ticketExists) throw new BadRequestException(['Ticket not found']);
 
@@ -120,7 +130,7 @@ export class TicketService implements ITicketService {
   }
 
   async countSold({ ticketId }: CountSoldDto): Promise<number> {
-    const ticketExists = await this.findById(ticketId);
+    const ticketExists = await this.findOne({ id: ticketId });
 
     if (!ticketExists) throw new BadRequestException(['Ticket not found']);
 
@@ -130,7 +140,7 @@ export class TicketService implements ITicketService {
   }
 
   async countUsed({ ticketId }: CountUsedDto): Promise<number> {
-    const ticketExists = await this.findById(ticketId);
+    const ticketExists = await this.findOne({ id: ticketId });
 
     if (!ticketExists) throw new BadRequestException(['Ticket not found']);
 

@@ -2,8 +2,10 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Get,
   HttpCode,
   HttpStatus,
+  Param,
   Post,
   Request,
   UseGuards,
@@ -12,7 +14,9 @@ import { Role } from '@prisma/client';
 import { AuthGuard } from 'src/auth/guards/auth.guard';
 import { AuthenticatedRequest } from 'src/auth/requests/authenticated-request';
 import { Roles } from 'src/user/decorators/roles.decorator';
+import { TicketSaleResponse } from './dtos/ticket-sale.response';
 import { CreateSaleRequest } from './requests/create-sale.request';
+import { FindSaleByIdRequest } from './requests/find-sale-by-id.request';
 import { UpdateAsUnusedRequest } from './requests/update-as-unused.request';
 import { UpdateAsUsedRequest } from './requests/update-as-used.request';
 import { SaleService } from './sale.service';
@@ -34,6 +38,24 @@ export class SaleController {
       userId,
       quantity: createSaleRequest.quantity,
     });
+  }
+
+  @UseGuards(AuthGuard)
+  @Get()
+  find(
+    @Request() { userId }: AuthenticatedRequest,
+  ): Promise<TicketSaleResponse[]> {
+    if (!userId) throw new BadRequestException(['UserId not found in request']);
+
+    return this.saleService.find({ userId });
+  }
+
+  @UseGuards(AuthGuard)
+  @Get(':id')
+  findOne(
+    @Param() findSaleByIdRequest: FindSaleByIdRequest,
+  ): Promise<TicketSaleResponse> {
+    return this.saleService.findOne(findSaleByIdRequest);
   }
 
   @Roles(Role.ADMIN)
