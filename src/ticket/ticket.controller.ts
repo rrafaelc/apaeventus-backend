@@ -15,6 +15,7 @@ import { CountSoldRequest } from './requests/count-sold.request';
 import { CountUsedRequest } from './requests/count-used.request';
 import { CreateTicketRequest } from './requests/create-ticket.request';
 import { EnableDisableTicketRequest } from './requests/enable-disable-ticket.request';
+import { FindTicketByIdRequest } from './requests/find-ticket-by-id.request';
 import { TicketService } from './ticket.service';
 
 @Controller('ticket')
@@ -24,6 +25,11 @@ export class TicketController {
   @Get()
   findAll(): Promise<TicketResponseDto[]> {
     return this.ticketService.findAll();
+  }
+
+  @Get(':id')
+  findOne(@Param() { id }: FindTicketByIdRequest): Promise<TicketResponseDto> {
+    return this.ticketService.findOne({ id });
   }
 
   @Roles(Role.ADMIN)

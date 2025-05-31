@@ -7,10 +7,10 @@
 	},
 	"item": [
 		{
-			"name": "User",
+			"name": "Usuário",
 			"item": [
 				{
-					"name": "Profile",
+					"name": "Perfil",
 					"request": {
 						"auth": {
 							"type": "noauth"
@@ -37,7 +37,7 @@
 					"response": []
 				},
 				{
-					"name": "Create",
+					"name": "Cadastrar",
 					"request": {
 						"method": "POST",
 						"header": [],
@@ -65,7 +65,7 @@
 			]
 		},
 		{
-			"name": "Auth",
+			"name": "Autorização",
 			"item": [
 				{
 					"name": "Login",
@@ -169,101 +169,10 @@
 			]
 		},
 		{
-			"name": "Admin/Reader",
+			"name": "Admin/Leitor",
 			"item": [
 				{
-					"name": "Set Ticket to Used",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{accessToken}}",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"saleId\": \"b989e4be-2ac8-469e-86b4-ecb4c1c90962\"\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{base_url}}/sale/set-used",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"sale",
-								"set-used"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Set Ticket to Unused",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{accessToken}}",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"saleId\": \"b989e4be-2ac8-469e-86b4-ecb4c1c90962\"\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{base_url}}/sale/set-unused",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"sale",
-								"set-unused"
-							]
-						}
-					},
-					"response": []
-				}
-			]
-		},
-		{
-			"name": "Ticket",
-			"item": [
-				{
-					"name": "Get All",
-					"request": {
-						"auth": {
-							"type": "noauth"
-						},
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/ticket",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"ticket"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Create",
+					"name": "Criar evento",
 					"request": {
 						"method": "POST",
 						"header": [
@@ -321,7 +230,7 @@
 					"response": []
 				},
 				{
-					"name": "Count Sold",
+					"name": "Ingresso vendidos",
 					"request": {
 						"auth": {
 							"type": "noauth"
@@ -349,7 +258,7 @@
 					"response": []
 				},
 				{
-					"name": "Count Used",
+					"name": "Ingresso usados",
 					"request": {
 						"auth": {
 							"type": "noauth"
@@ -377,7 +286,7 @@
 					"response": []
 				},
 				{
-					"name": "Enable/Disable",
+					"name": "Habilitar ou Desabilitar evento",
 					"request": {
 						"auth": {
 							"type": "noauth"
@@ -411,14 +320,126 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "Marcar ingresso vendido como usado",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"saleId\": \"b989e4be-2ac8-469e-86b4-ecb4c1c90962\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/sale/set-used",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"sale",
+								"set-used"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Marcar ingresso vendido como não usado",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"saleId\": \"b989e4be-2ac8-469e-86b4-ecb4c1c90962\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/sale/set-unused",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"sale",
+								"set-unused"
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		},
 		{
-			"name": "Sale",
+			"name": "Eventos",
 			"item": [
 				{
-					"name": "Create",
+					"name": "Buscar todos",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/ticket",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ticket"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Buscar um",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/ticket/fcd1e921-f706-442d-89be-8b857d1463bf",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ticket",
+								"fcd1e921-f706-442d-89be-8b857d1463bf"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Ingresso",
+			"item": [
+				{
+					"name": "Comprar",
 					"request": {
 						"auth": {
 							"type": "noauth"

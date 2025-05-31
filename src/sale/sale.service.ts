@@ -20,7 +20,7 @@ export class SaleService implements ISaleService {
   ) {}
 
   async create({ ticketId, userId, quantity }: CreateSaleDto): Promise<void> {
-    const ticket = await this.ticketService.findById(ticketId);
+    const ticket = await this.ticketService.findOne({ id: ticketId });
     if (!ticket) throw new BadRequestException(['Ticket not found']);
 
     const user = await this.userService.findById(userId);
