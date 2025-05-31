@@ -1,5 +1,6 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
+import { PrismaService } from 'src/database/prisma.service';
 import { TokenService } from 'src/token/token.service';
 import { UserService } from 'src/user/user.service';
 import { AccessTokenResponseDto } from './dtos/access-token-response.dto';
@@ -11,6 +12,7 @@ import { IAuthService } from './interfaces/IAuthService';
 @Injectable()
 export class AuthService implements IAuthService {
   constructor(
+    private readonly prisma: PrismaService,
     private readonly userService: UserService,
     private readonly tokenService: TokenService,
   ) {}
@@ -32,9 +34,9 @@ export class AuthService implements IAuthService {
     const accessToken = await this.tokenService.generateAccessToken(user);
     const refreshToken = await this.tokenService.generateRefreshToken(user);
 
-    await this.userService.update({
-      id: user.id,
-      refreshToken,
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: { refreshToken },
     });
 
     return {

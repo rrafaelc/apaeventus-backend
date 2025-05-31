@@ -82,6 +82,12 @@ export class UserService implements IUserService {
   }
 
   async update({ id, ...data }: UpdateUserDto): Promise<UserResponseDto> {
+    if (data.password) {
+      const hashedPassword = await bcrypt.hash(data.password, 10);
+      data.password = hashedPassword;
+      data.refreshToken = null;
+    }
+
     const user = await this.prisma.user.update({
       where: { id },
       data,
