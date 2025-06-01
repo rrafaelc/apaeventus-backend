@@ -5,7 +5,7 @@ export class TicketSaleResponse {
   used: boolean;
   pdfUrl: string | null;
   qrCodeUrl: string | null;
-  qrCodeBase64: string | null;
+  qrCodeDataUrl: string | null;
   createdAt: Date;
   updatedAt: Date;
   ticket: Ticket;

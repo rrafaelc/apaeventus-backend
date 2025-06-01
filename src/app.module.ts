@@ -6,6 +6,7 @@ import { SaleModule } from './sale/sale.module';
 import { TicketModule } from './ticket/ticket.module';
 import { TokenModule } from './token/token.module';
 import { UserModule } from './user/user.module';
+import { LambdaModule } from './lambda/lambda.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { UserModule } from './user/user.module';
     TokenModule,
     TicketModule,
     SaleModule,
+    LambdaModule,
   ],
   controllers: [],
   providers: [PrismaService],

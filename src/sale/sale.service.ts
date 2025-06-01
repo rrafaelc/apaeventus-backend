@@ -1,8 +1,10 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { Ticket, TicketSale } from '@prisma/client';
-import { writeFileSync } from 'fs';
+import { unlinkSync, writeFileSync } from 'fs';
+import { PDFDocument } from 'pdf-lib';
 import * as QRCode from 'qrcode';
 import { PrismaService } from 'src/database/prisma.service';
+import { LambdaService } from 'src/lambda/lambda.service';
 import { TicketService } from 'src/ticket/ticket.service';
 import { UserService } from 'src/user/user.service';
 import { CreateSaleDto } from './dtos/create-sale.dto';
@@ -12,6 +14,7 @@ import { TicketSaleResponse } from './dtos/ticket-sale.response';
 import { UpdateAsUnusedDto } from './dtos/update-as-unused.dto';
 import { UpdateAsUsedDto } from './dtos/update-as-used.dto';
 import { ISaleService } from './interfaces/ISaleService';
+import { generateOnePagePdf } from './utils/generateOnePagePdf';
 import { generatePdf } from './utils/generatePdf';
 
 @Injectable()
@@ -20,6 +23,7 @@ export class SaleService implements ISaleService {
     private readonly ticketService: TicketService,
     private readonly userService: UserService,
     private readonly prisma: PrismaService,
+    private readonly lambdaService: LambdaService,
   ) {}
 
   async create({ ticketId, userId, quantity }: CreateSaleDto): Promise<void> {
@@ -42,26 +46,45 @@ export class SaleService implements ISaleService {
       }
     });
 
+    const pdfDoc = await PDFDocument.create();
+    const pdfPaths: string[] = [];
+
     for (const sale of createdSales) {
       const qrContent = sale.id;
       const dataUrl = await QRCode.toDataURL(qrContent);
 
       await this.prisma.ticketSale.update({
         where: { id: sale.id },
-        data: { qrCodeBase64: dataUrl },
+        data: { qrCodeDataUrl: dataUrl },
       });
 
       const buffer = await QRCode.toBuffer(qrContent);
-      // writeFileSync(`qrcodes/qrcode-ticketSale-${sale.id}.png`, buffer);
 
-      const pdfBytes = await generatePdf(buffer, ticket, user);
-      writeFileSync(
-        `pdfs/ticketSale-${sale.id}-${new Date().getTime()}.pdf`,
-        pdfBytes,
-      );
+      await generateOnePagePdf(buffer, ticket, user, pdfDoc);
+
+      const pdf = await generatePdf(buffer, ticket, user);
+
+      if (pdf) {
+        const path = `pdfs/${sale.id}-${new Date().getTime()}.pdf`;
+        writeFileSync(path, pdf);
+        pdfPaths.push(path);
+      }
     }
 
-    // TODO: Send email to customer with ticket information and generate PDF to save in a bucket
+    for (const path of pdfPaths) {
+      try {
+        unlinkSync(path);
+      } catch (err) {
+        console.error(`Error deleting the pdf: ${path}`, err);
+      }
+    }
+
+    const onePagePdf = await pdfDoc.save();
+
+    await this.sendPdfEmail(
+      Buffer.from(onePagePdf).toString('base64'),
+      user.email,
+    );
   }
 
   async find({ userId }: FindAllSaleDto): Promise<TicketSaleResponse[]> {
@@ -77,7 +100,7 @@ export class SaleService implements ISaleService {
       used: ticketSale.used,
       pdfUrl: ticketSale.pdfUrl,
       qrCodeUrl: ticketSale.qrCodeUrl,
-      qrCodeBase64: ticketSale.qrCodeBase64,
+      qrCodeDataUrl: ticketSale.qrCodeDataUrl,
       createdAt: ticketSale.createdAt,
       updatedAt: ticketSale.updatedAt,
       ticket: ticketSale.ticket,
@@ -99,7 +122,7 @@ export class SaleService implements ISaleService {
       used: ticketSale.used,
       pdfUrl: ticketSale.pdfUrl,
       qrCodeUrl: ticketSale.qrCodeUrl,
-      qrCodeBase64: ticketSale.qrCodeBase64,
+      qrCodeDataUrl: ticketSale.qrCodeDataUrl,
       createdAt: ticketSale.createdAt,
       updatedAt: ticketSale.updatedAt,
       ticket: ticketSale.ticket,
@@ -157,5 +180,16 @@ export class SaleService implements ISaleService {
 
     if (ticketSold + quantity > ticket.quantity)
       throw new BadRequestException(['Ticket quantity exceeded available']);
+  }
+
+  private async sendPdfEmail(pdfBase64: string, to: string) {
+    const payload = {
+      pdf: pdfBase64,
+      to,
+      subject: 'ApaEventus: Seu ingresso está disponível!',
+      text: 'Obrigado por ajudar a nossa causa! Seu ingresso está anexado como pdf.',
+    };
+
+    await this.lambdaService.sendEmailWithPdf(payload);
   }
 }
