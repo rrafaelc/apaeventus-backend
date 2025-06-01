@@ -1,4 +1,4 @@
-import { IsNumber, IsUUID, Min } from 'class-validator';
+import { IsNumber, IsUUID, Max, Min } from 'class-validator';
 
 export class CreateSaleRequest {
   @IsUUID()
@@ -6,5 +6,6 @@ export class CreateSaleRequest {
 
   @IsNumber()
   @Min(1)
+  @Max(5)
   quantity: number;
 }

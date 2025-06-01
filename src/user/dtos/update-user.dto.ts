@@ -1,7 +1,9 @@
 export class UpdateUserDto {
   id: string;
-  email?: string;
   name?: string;
+  email?: string;
   password?: string;
+  rg?: string;
+  cellphone?: string;
   refreshToken?: string | null;
 }
