@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { User } from '@prisma/client';
-import { JwtConstants } from './constants/constants';
+import { JwtConstants } from '../constants/jwt.constants';
 import { TokenDto } from './dtos/token.dto';
 import { ITokenService } from './interfaces/ITokenService';
 

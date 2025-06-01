@@ -1,10 +1,10 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { Ticket, TicketSale } from '@prisma/client';
-import { unlinkSync, writeFileSync } from 'fs';
+import { unlinkSync } from 'fs';
 import { PDFDocument } from 'pdf-lib';
 import * as QRCode from 'qrcode';
+import { AWSService } from 'src/aws/aws.service';
 import { PrismaService } from 'src/database/prisma.service';
-import { LambdaService } from 'src/lambda/lambda.service';
 import { TicketService } from 'src/ticket/ticket.service';
 import { UserService } from 'src/user/user.service';
 import { CreateSaleDto } from './dtos/create-sale.dto';
@@ -23,7 +23,7 @@ export class SaleService implements ISaleService {
     private readonly ticketService: TicketService,
     private readonly userService: UserService,
     private readonly prisma: PrismaService,
-    private readonly lambdaService: LambdaService,
+    private readonly awsService: AWSService,
   ) {}
 
   async create({ ticketId, userId, quantity }: CreateSaleDto): Promise<void> {
@@ -52,6 +52,8 @@ export class SaleService implements ISaleService {
     for (const sale of createdSales) {
       const qrContent = sale.id;
       const dataUrl = await QRCode.toDataURL(qrContent);
+      const pngBuffer = await QRCode.toBuffer(qrContent, { type: 'png' });
+      // writeFileSync(`qrcodes/qrcode-${sale.id}.png`, pngBuffer);
 
       await this.prisma.ticketSale.update({
         where: { id: sale.id },
@@ -66,7 +68,7 @@ export class SaleService implements ISaleService {
 
       if (pdf) {
         const path = `pdfs/${sale.id}-${new Date().getTime()}.pdf`;
-        writeFileSync(path, pdf);
+        // writeFileSync(path, pdf);
         pdfPaths.push(path);
       }
     }
@@ -81,10 +83,10 @@ export class SaleService implements ISaleService {
 
     const onePagePdf = await pdfDoc.save();
 
-    await this.sendPdfEmail(
-      Buffer.from(onePagePdf).toString('base64'),
-      user.email,
-    );
+    // await this.sendPdfEmail(
+    //   Buffer.from(onePagePdf).toString('base64'),
+    //   user.email,
+    // );
   }
 
   async find({ userId }: FindAllSaleDto): Promise<TicketSaleResponse[]> {
@@ -190,6 +192,6 @@ export class SaleService implements ISaleService {
       text: 'Obrigado por ajudar a nossa causa! Seu ingresso está anexado como pdf.',
     };
 
-    await this.lambdaService.sendEmailWithPdf(payload);
+    await this.awsService.sendEmailWithPdf(payload);
   }
 }

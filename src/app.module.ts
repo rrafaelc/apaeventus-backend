@@ -1,12 +1,12 @@
 import { Module } from '@nestjs/common';
 import { AuthModule } from './auth/auth.module';
+import { AWSModule } from './aws/aws.module';
 import { DatabaseModule } from './database/database.module';
 import { PrismaService } from './database/prisma.service';
 import { SaleModule } from './sale/sale.module';
 import { TicketModule } from './ticket/ticket.module';
 import { TokenModule } from './token/token.module';
 import { UserModule } from './user/user.module';
-import { LambdaModule } from './lambda/lambda.module';
 
 @Module({
   imports: [
@@ -16,7 +16,7 @@ import { LambdaModule } from './lambda/lambda.module';
     TokenModule,
     TicketModule,
     SaleModule,
-    LambdaModule,
+    AWSModule,
   ],
   controllers: [],
   providers: [PrismaService],
