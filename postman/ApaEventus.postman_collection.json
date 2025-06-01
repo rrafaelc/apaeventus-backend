@@ -75,7 +75,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"name\": \"Admin\",\r\n    \"email\": \"admin@email.com\",\r\n    \"password\": \"12345678\"\r\n}",
+							"raw": "{\r\n    \"name\": \"Admin\",\r\n    \"email\": \"admin@email.com\",\r\n    \"password\": \"12345678\",\r\n    \"rg\": \"44444444-4\",\r\n    \"cellphone\": \"19987654321\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -311,33 +311,33 @@
 							"formdata": [
 								{
 									"key": "title",
-									"value": "Titulo do evento 1",
+									"value": "FESTA JUNINA APAE ITAPIRA",
 									"type": "text"
 								},
 								{
 									"key": "description",
-									"value": "Descrição do evento 1",
+									"value": "FESTA JUNINA EM PROL A APAE ITAPIRA COM APRESENTAÇÕES DOS ALUNOS EM PARCERIA COM A CASA DAS ARTES SHOW COM JOÃO ELIAS E ELIEL",
 									"type": "text"
 								},
 								{
 									"key": "eventDate",
-									"value": "2025-06-20T19:00:00",
+									"value": "2025-06-14T19:00:00",
 									"type": "text"
 								},
 								{
 									"key": "quantity",
-									"value": "100",
+									"value": "300",
 									"type": "text"
 								},
 								{
 									"key": "price",
-									"value": "50",
+									"value": "2",
 									"type": "text"
 								},
 								{
 									"key": "imageFile",
 									"type": "file",
-									"src": "/C:/Users/rafae/Pictures/apae.png"
+									"src": "/C:/Users/rafae/Pictures/festa-junina.jpg"
 								}
 							]
 						},
@@ -581,7 +581,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"ticketId\": \"fcd1e921-f706-442d-89be-8b857d1463bf\",\r\n    \"quantity\": 2\r\n}",
+							"raw": "{\r\n    \"ticketId\": \"42e0622e-2949-43aa-b368-c85a93456272\",\r\n    \"quantity\": 2\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
