@@ -2,6 +2,7 @@ import { Ticket } from '@prisma/client';
 import { CountSoldDto } from '../dtos/count-sold.dto';
 import { CountUsedDto } from '../dtos/count-used.dto';
 import { CreateTicketDto } from '../dtos/create-ticket.dto';
+import { DeleteTicketDto } from '../dtos/delete-ticket.dto';
 import { EnableDisableTicketDto } from '../dtos/enable-disable-ticket.dto';
 import { FindAllDto } from '../dtos/find-all.dto';
 import { FindTicketByIdDto } from '../dtos/find-ticket-by-id.dto';
@@ -19,4 +20,5 @@ export interface ITicketService {
   ): Promise<Ticket>;
   countSold(countSoldDto: CountSoldDto): Promise<number>;
   countUsed(countUsedDto: CountUsedDto): Promise<number>;
+  delete(deleteTicketDto: DeleteTicketDto): Promise<void>;
 }

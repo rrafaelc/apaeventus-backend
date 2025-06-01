@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Post,
@@ -15,6 +16,7 @@ import { TicketResponseDto } from './dtos/ticket-response.dto';
 import { CountSoldRequest } from './requests/count-sold.request';
 import { CountUsedRequest } from './requests/count-used.request';
 import { CreateTicketRequest } from './requests/create-ticket.request';
+import { DeleteTicketRequest } from './requests/delete-ticket.request';
 import { EnableDisableTicketRequest } from './requests/enable-disable-ticket.request';
 import { FindAllRequest } from './requests/find-all.request';
 import { FindTicketByIdRequest } from './requests/find-ticket-by-id.request';
@@ -65,5 +67,11 @@ export class TicketController {
   @Get(':ticketId/count-used')
   countUsed(@Param() countUsedRequest: CountUsedRequest): Promise<number> {
     return this.ticketService.countUsed(countUsedRequest);
+  }
+
+  @Roles(Role.ADMIN)
+  @Delete(':id')
+  delete(@Param() deleteTicketRequest: DeleteTicketRequest): Promise<void> {
+    return this.ticketService.delete(deleteTicketRequest);
   }
 }

@@ -10,6 +10,7 @@ import { PrismaService } from 'src/database/prisma.service';
 import { CountSoldDto } from './dtos/count-sold.dto';
 import { CountUsedDto } from './dtos/count-used.dto';
 import { CreateTicketDto } from './dtos/create-ticket.dto';
+import { DeleteTicketDto } from './dtos/delete-ticket.dto';
 import { EnableDisableTicketDto } from './dtos/enable-disable-ticket.dto';
 import { FindAllDto } from './dtos/find-all.dto';
 import { FindTicketByIdDto } from './dtos/find-ticket-by-id.dto';
@@ -69,6 +70,7 @@ export class TicketService implements ITicketService {
     const tickets = await this.prisma.ticket.findMany({
       where: {
         isActive: showInactive === 'true' ? undefined : true,
+        isDeleted: false,
       },
     });
 
@@ -89,7 +91,10 @@ export class TicketService implements ITicketService {
 
   async findOne({ id }: FindTicketByIdDto): Promise<TicketResponseDto> {
     const ticket = await this.prisma.ticket.findUnique({
-      where: { id },
+      where: {
+        id,
+        isDeleted: false,
+      },
     });
 
     if (!ticket) throw new BadRequestException(['Ticket not found']);
@@ -138,6 +143,22 @@ export class TicketService implements ITicketService {
         used: true,
       },
     });
+  }
+
+  async delete({ id }: DeleteTicketDto): Promise<void> {
+    const ticketExists = await this.findOne({ id });
+
+    if (!ticketExists || ticketExists.isDeleted)
+      throw new BadRequestException(['Ticket not found']);
+
+    try {
+      await this.prisma.ticket.update({
+        where: { id },
+        data: { isDeleted: true },
+      });
+    } catch (error) {
+      throw new InternalServerErrorException([error.message]);
+    }
   }
 
   private validationIsEventExpired(eventDate: string): void {
