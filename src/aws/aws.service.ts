@@ -57,4 +57,29 @@ export class AWSService implements IAWSService {
       throw new InternalServerErrorException(['Error uploading to S3']);
     }
   }
+
+  async uploadBufferToS3(
+    buffer: Buffer,
+    fileName: string,
+    mimeType: string,
+  ): Promise<string> {
+    const bucketName = awsConstants.s3_bucket_name!;
+
+    try {
+      await this.s3.send(
+        new PutObjectCommand({
+          Bucket: bucketName,
+          Key: fileName,
+          Body: buffer,
+          ContentType: mimeType,
+          ACL: 'public-read',
+        }),
+      );
+
+      return `https://${bucketName}.s3.${process.env.AWS_REGION}.amazonaws.com/${fileName}`;
+    } catch (error) {
+      console.error('Error uploading buffer to S3:', error);
+      throw new InternalServerErrorException(['Error uploading to S3']);
+    }
+  }
 }

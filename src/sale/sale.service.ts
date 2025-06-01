@@ -51,26 +51,34 @@ export class SaleService implements ISaleService {
 
     for (const sale of createdSales) {
       const qrContent = sale.id;
-      const dataUrl = await QRCode.toDataURL(qrContent);
-      const pngBuffer = await QRCode.toBuffer(qrContent, { type: 'png' });
-      // writeFileSync(`qrcodes/qrcode-${sale.id}.png`, pngBuffer);
-
-      await this.prisma.ticketSale.update({
-        where: { id: sale.id },
-        data: { qrCodeDataUrl: dataUrl },
-      });
-
       const buffer = await QRCode.toBuffer(qrContent);
-
       await generateOnePagePdf(buffer, ticket, user, pdfDoc);
 
       const pdf = await generatePdf(buffer, ticket, user);
+      const pngQRCodeBuffer = await QRCode.toBuffer(qrContent, { type: 'png' });
+      const qrCodeDataUrl = await QRCode.toDataURL(qrContent);
 
-      if (pdf) {
-        const path = `pdfs/${sale.id}-${new Date().getTime()}.pdf`;
-        // writeFileSync(path, pdf);
-        pdfPaths.push(path);
-      }
+      const filename = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
+      const pdfUrl = await this.awsService.uploadBufferToS3(
+        Buffer.from(pdf),
+        `${filename}.pdf`,
+        'application/pdf',
+      );
+
+      const qrCodeUrl = await this.awsService.uploadBufferToS3(
+        Buffer.from(pngQRCodeBuffer),
+        `${filename}.png`,
+        'image/png',
+      );
+
+      await this.prisma.ticketSale.update({
+        where: { id: sale.id },
+        data: {
+          pdfUrl,
+          qrCodeUrl,
+          qrCodeDataUrl,
+        },
+      });
     }
 
     for (const path of pdfPaths) {
@@ -83,10 +91,10 @@ export class SaleService implements ISaleService {
 
     const onePagePdf = await pdfDoc.save();
 
-    // await this.sendPdfEmail(
-    //   Buffer.from(onePagePdf).toString('base64'),
-    //   user.email,
-    // );
+    await this.sendPdfEmail(
+      Buffer.from(onePagePdf).toString('base64'),
+      user.email,
+    );
   }
 
   async find({ userId }: FindAllSaleDto): Promise<TicketSaleResponse[]> {
