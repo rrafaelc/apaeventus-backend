@@ -82,6 +82,17 @@ export class UserService implements IUserService {
   }
 
   async update({ id, ...data }: UpdateUserDto): Promise<UserResponseDto> {
+    if (data.email) {
+      const userWithSameEmail = await this.prisma.user.findUnique({
+        where: { email: data.email },
+      });
+
+      if (userWithSameEmail && userWithSameEmail.id !== id)
+        throw new UnauthorizedException(['Email already in use']);
+
+      data.refreshToken = null;
+    }
+
     if (data.password) {
       const hashedPassword = await bcrypt.hash(data.password, 10);
       data.password = hashedPassword;
@@ -93,9 +104,7 @@ export class UserService implements IUserService {
       data,
     });
 
-    if (!user) {
-      throw new UnauthorizedException(['User not found']);
-    }
+    if (!user) throw new UnauthorizedException(['User not found']);
 
     return {
       id: user.id,
