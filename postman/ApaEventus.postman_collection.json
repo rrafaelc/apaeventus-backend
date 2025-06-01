@@ -354,6 +354,30 @@
 					"response": []
 				},
 				{
+					"name": "Deletar evento",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/ticket/eca5e7b3-a714-4f08-923d-6d61e8598d58",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ticket",
+								"eca5e7b3-a714-4f08-923d-6d61e8598d58"
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "Habilitar ou Desabilitar evento",
 					"request": {
 						"auth": {
