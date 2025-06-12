@@ -168,9 +168,9 @@ export class TicketService implements ITicketService {
       const oneDayFromNow = dayjs(now).add(1, 'day').toDate();
 
       if (new Date(eventDate) < oneDayFromNow) {
-        throw new BadRequestException([
+        throw new BadRequestException(
           'Event date must be at least 1 day in the future',
-        ]);
+        );
       }
     } catch (error) {
       throw new BadRequestException([
