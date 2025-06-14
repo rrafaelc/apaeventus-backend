@@ -2,6 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
 import { AWSService } from 'src/aws/aws.service';
+import { RecoveryPasswordConstants } from 'src/constants/recovery-password.constants';
 import { PrismaService } from 'src/database/prisma.service';
 import { decrypt, encrypt } from 'src/utils/crypto';
 import { GenerateRecoveryCodeDto } from './dtos/generate-recovery-code.dto';
@@ -104,6 +105,8 @@ export class RecoverPasswordService implements IRecoverPasswordService {
     code: string,
     encryptedEmail: string,
   ): Promise<void> {
+    const baseUrl = RecoveryPasswordConstants.BaseUrl;
+
     const payload = {
       to: email,
       subject: 'ApaEventus: Recuperação de senha',
@@ -113,10 +116,10 @@ Recebemos uma solicitação para redefinir a sua senha no ApaEventus.
 
 Para continuar, acesse o link abaixo e utilize o código de recuperação informado:
 
-Link: http://localhost/reset-password?data=${encryptedEmail}
+Link: ${baseUrl}?data=${encryptedEmail}
 Código de recuperação: ${code}
 
-Este código é válido por 10 minutos.
+Atenção: este código é válido por 10 minutos.
 
 Se você não solicitou a recuperação de senha, pode ignorar este e-mail.
 
