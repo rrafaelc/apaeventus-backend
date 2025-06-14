@@ -196,8 +196,8 @@ export class SaleService implements ISaleService {
     const payload = {
       pdf: pdfBase64,
       to,
-      subject: 'ApaEventus: Seu ingresso está disponível!',
-      text: 'Obrigado por ajudar a nossa causa! Seu ingresso está anexado como pdf.',
+      subject: 'ApaEventus: Seu ingresso chegou!',
+      text: 'Olá! Obrigado por apoiar nossa causa. Seu ingresso está em anexo neste e-mail, pronto para ser utilizado. Aproveite o evento!',
     };
 
     await this.awsService.sendEmailWithPdf(payload);

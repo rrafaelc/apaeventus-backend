@@ -7,6 +7,7 @@ import { SaleModule } from './sale/sale.module';
 import { TicketModule } from './ticket/ticket.module';
 import { TokenModule } from './token/token.module';
 import { UserModule } from './user/user.module';
+import { RecoverPasswordModule } from './recover-password/recover-password.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { UserModule } from './user/user.module';
     TicketModule,
     SaleModule,
     AWSModule,
+    RecoverPasswordModule,
   ],
   controllers: [],
   providers: [PrismaService],

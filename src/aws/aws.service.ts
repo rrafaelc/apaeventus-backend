@@ -4,6 +4,7 @@ import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import * as path from 'path';
 import { awsConstants } from 'src/constants/aws.constants';
 import { SendEmailWithPdfDto } from './dtos/send-email-with-pdf.dto';
+import { SendEmailDto } from './dtos/send-email.dto';
 import { IAWSService } from './interfaces/IAWSService';
 
 @Injectable()
@@ -23,6 +24,15 @@ export class AWSService implements IAWSService {
       secretAccessKey: awsConstants.aws_secret_access_key!,
     },
   });
+
+  async sendEmail(sendEmailDto: SendEmailDto): Promise<void> {
+    const command = new InvokeCommand({
+      FunctionName: awsConstants.lambda_send_email_function_name!,
+      Payload: Buffer.from(JSON.stringify(sendEmailDto)),
+    });
+
+    await this.lambda.send(command);
+  }
 
   async sendEmailWithPdf(
     sendEmailWithPdfDto: SendEmailWithPdfDto,
