@@ -117,6 +117,7 @@ Recebemos uma solicitação para redefinir a sua senha no ApaEventus.
 Para continuar, acesse o link abaixo e utilize o código de recuperação informado:
 
 Link: ${baseUrl}?data=${encryptedEmail}
+
 Código de recuperação: ${code}
 
 Atenção: este código é válido por 10 minutos.
