@@ -625,6 +625,92 @@
 					"response": []
 				}
 			]
+		},
+		{
+			"name": "Recuperar senha",
+			"item": [
+				{
+					"name": "Enviar código para o email",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"email\": \"seuemail@gmail.com\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/recover-password/generate",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"recover-password",
+								"generate"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Validar código",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"encryptedEmail\": \"5a35b1efbbfd79de5c97157a95fb7563b2f6ea9db69ebd8e3e830699ce9023eb\",\r\n    \"code\": \"321838\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/recover-password/validate",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"recover-password",
+								"validate"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Resetar senha",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"encryptedEmail\": \"5a35b1efbbfd79de5c97157a95fb7563b2f6ea9db69ebd8e3e830699ce9023eb\",\r\n    \"code\": \"321838\",\r\n    \"newPassword\": \"12345678\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/recover-password/reset",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"recover-password",
+								"reset"
+							]
+						}
+					},
+					"response": []
+				}
+			]
 		}
 	],
 	"event": [

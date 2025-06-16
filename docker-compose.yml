@@ -26,7 +26,7 @@ services:
       AWS_REGION: ${AWS_REGION}
       S3_BUCKET_NAME: ${S3_BUCKET_NAME}
     ports:
-      - "80:3333"
+      - "8080:3333"
     command: ./entrypoint.sh
 
 volumes:
