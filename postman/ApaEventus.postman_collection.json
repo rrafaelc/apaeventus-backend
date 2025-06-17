@@ -738,7 +738,7 @@
 	"variable": [
 		{
 			"key": "base_url",
-			"value": "http://localhost:3333",
+			"value": "https://apaeventus.rafaelcostadev.com",
 			"type": "string"
 		}
 	]
