@@ -71,6 +71,9 @@ export class TicketService implements ITicketService {
       where: {
         isActive: showInactive === 'true' ? undefined : true,
         isDeleted: false,
+        eventDate: {
+          gte: new Date(),
+        },
       },
     });
 
