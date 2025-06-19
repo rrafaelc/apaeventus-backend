@@ -20,7 +20,12 @@ export class RecoverPasswordService implements IRecoverPasswordService {
   async generateRecoveryCode({
     email,
   }: GenerateRecoveryCodeDto): Promise<void> {
-    const user = await this.findUserByEmail(email, 'User not found');
+    const user = await this.prismaService.user.findUnique({ where: { email } });
+
+    if (!user) {
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+      return;
+    }
 
     await this.prismaService.recoveryCode.deleteMany({
       where: { userId: user.id },
