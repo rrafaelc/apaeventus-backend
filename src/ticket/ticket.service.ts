@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import { Ticket } from '@prisma/client';
 import * as dayjs from 'dayjs';
+import * as utc from 'dayjs/plugin/utc';
 import { AWSService } from 'src/aws/aws.service';
 import { PrismaService } from 'src/database/prisma.service';
 import { CountSoldDto } from './dtos/count-sold.dto';
@@ -16,6 +17,8 @@ import { FindAllDto } from './dtos/find-all.dto';
 import { FindTicketByIdDto } from './dtos/find-ticket-by-id.dto';
 import { TicketResponseDto } from './dtos/ticket-response.dto';
 import { ITicketService } from './interfaces/ITicketService';
+
+dayjs.extend(utc);
 
 @Injectable()
 export class TicketService implements ITicketService {
@@ -166,11 +169,11 @@ export class TicketService implements ITicketService {
 
   private validationIsEventExpired(eventDate: string): void {
     try {
-      const now = new Date();
+      const nowUtc = dayjs().utc();
+      const oneDayFromNowUtc = nowUtc.add(1, 'day');
+      const eventDateUtc = dayjs(eventDate).utc();
 
-      const oneDayFromNow = dayjs(now).add(1, 'day').toDate();
-
-      if (new Date(eventDate) < oneDayFromNow) {
+      if (eventDateUtc.isBefore(oneDayFromNowUtc)) {
         throw new BadRequestException(
           'Event date must be at least 1 day in the future',
         );
