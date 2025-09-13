@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { Ticket } from '@prisma/client';
 import * as dayjs from 'dayjs';
-import utc from 'dayjs/plugin/utc';
+import * as utc from 'dayjs/plugin/utc';
 import { AWSService } from 'src/aws/aws.service';
 import { PrismaService } from 'src/database/prisma.service';
 import { CountSoldDto } from './dtos/count-sold.dto';
