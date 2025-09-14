@@ -67,10 +67,23 @@ export class TicketService implements ITicketService {
 
     try {
       this.logger.debug('Creating ticket in database');
+
+      // Convertemos a data do horário de Brasília para UTC antes de salvar
+      const brasiliaOffset = -3;
+      const eventDateBrasilia = dayjs(data.eventDate);
+      const eventDateUtc = eventDateBrasilia
+        .utc()
+        .subtract(brasiliaOffset, 'hours')
+        .toDate();
+
+      this.logger.debug(
+        `Event date to be saved (UTC): ${eventDateUtc.toISOString()}`,
+      );
+
       const ticket = await this.prisma.ticket.create({
         data: {
           ...data,
-          eventDate: new Date(data.eventDate),
+          eventDate: eventDateUtc,
           quantity: Number(data.quantity),
           price: Number(data.price),
           ...(imageUrl && { imageUrl }),
@@ -215,9 +228,26 @@ export class TicketService implements ITicketService {
 
   private validationIsEventExpired(eventDate: string): void {
     try {
+      // Assumindo que a data vem do frontend no horário do Brasil (UTC-3)
+      // Convertemos para UTC para fazer a comparação consistente
+      const brasiliaOffset = -3; // Brasil está UTC-3
       const nowUtc = dayjs().utc();
       const oneDayFromNowUtc = nowUtc.add(1, 'day');
-      const eventDateUtc = dayjs(eventDate).utc();
+
+      // Interpretamos a data como horário de Brasília e convertemos para UTC
+      const eventDateBrasilia = dayjs(eventDate);
+      const eventDateUtc = eventDateBrasilia
+        .utc()
+        .subtract(brasiliaOffset, 'hours');
+
+      this.logger.debug(`Current UTC time: ${nowUtc.format()}`);
+      this.logger.debug(`Event date from frontend (Brasília): ${eventDate}`);
+      this.logger.debug(
+        `Event date converted to UTC: ${eventDateUtc.format()}`,
+      );
+      this.logger.debug(
+        `Minimum required date (UTC): ${oneDayFromNowUtc.format()}`,
+      );
 
       if (eventDateUtc.isBefore(oneDayFromNowUtc)) {
         throw new BadRequestException(
