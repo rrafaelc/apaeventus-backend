@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Injectable,
   InternalServerErrorException,
+  Logger,
 } from '@nestjs/common';
 import { Ticket } from '@prisma/client';
 import * as dayjs from 'dayjs';
@@ -22,6 +23,8 @@ dayjs.extend(utc);
 
 @Injectable()
 export class TicketService implements ITicketService {
+  private readonly logger = new Logger(TicketService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly awsService: AWSService,
@@ -31,13 +34,19 @@ export class TicketService implements ITicketService {
     data: CreateTicketDto,
     imageFile?: Express.Multer.File,
   ): Promise<Ticket> {
+    this.logger.debug(`Creating ticket: ${data.title}`);
+    this.logger.debug(`Event date: ${data.eventDate}`);
+    this.logger.debug(`Quantity: ${data.quantity}, Price: ${data.price}`);
+
     this.validationIsEventExpired(data.eventDate);
 
     let imageUrl: string | undefined;
 
     if (imageFile) {
+      this.logger.debug(`Processing image file: ${imageFile.originalname}`);
       const allowedMimeTypes = ['image/jpeg', 'image/png', 'image/jpg'];
       if (!allowedMimeTypes.includes(imageFile.mimetype)) {
+        this.logger.warn(`Invalid image format: ${imageFile.mimetype}`);
         throw new BadRequestException([
           'Invalid image format. Only JPEG and PNG are allowed',
         ]);
@@ -45,15 +54,19 @@ export class TicketService implements ITicketService {
 
       const maxSize = 10 * 1024 * 1024; // 10MB
       if (imageFile.size > maxSize) {
+        this.logger.warn(`Image size too large: ${imageFile.size} bytes`);
         throw new BadRequestException([
           'The image size must be less than 10MB',
         ]);
       }
 
+      this.logger.debug('Uploading image to S3');
       imageUrl = await this.awsService.uploadFileToS3(imageFile);
+      this.logger.debug(`Image uploaded successfully: ${imageUrl}`);
     }
 
     try {
+      this.logger.debug('Creating ticket in database');
       const ticket = await this.prisma.ticket.create({
         data: {
           ...data,
@@ -63,13 +76,20 @@ export class TicketService implements ITicketService {
           ...(imageUrl && { imageUrl }),
         },
       });
+
+      this.logger.log(
+        `Ticket created successfully: ${ticket.title} (ID: ${ticket.id})`,
+      );
       return ticket;
     } catch (error) {
+      this.logger.error(`Failed to create ticket: ${data.title}`, error.stack);
       throw new InternalServerErrorException([error.message]);
     }
   }
 
   async findAll({ showInactive }: FindAllDto): Promise<TicketResponseDto[]> {
+    this.logger.debug(`Finding all tickets, showInactive: ${showInactive}`);
+
     const tickets = await this.prisma.ticket.findMany({
       where: {
         isActive: showInactive === 'true' ? undefined : true,
@@ -80,7 +100,10 @@ export class TicketService implements ITicketService {
       },
     });
 
+    this.logger.debug(`Found ${tickets.length} tickets from database`);
+
     // For each ticket, count the number of sold tickets
+    this.logger.debug('Calculating sold count for each ticket');
     const ticketsWithSold = await Promise.all(
       tickets.map(async (ticket) => {
         const sold = await this.prisma.ticketSale.count({
@@ -90,12 +113,18 @@ export class TicketService implements ITicketService {
       }),
     );
 
-    return ticketsWithSold
+    const availableTickets = ticketsWithSold
       .filter((ticket) => ticket.quantity > ticket.sold)
       .sort((a, b) => b.sold - a.sold);
+
+    this.logger.log(`Returning ${availableTickets.length} available tickets`);
+
+    return availableTickets;
   }
 
   async findOne({ id }: FindTicketByIdDto): Promise<TicketResponseDto> {
+    this.logger.debug(`Finding ticket by ID: ${id}`);
+
     const ticket = await this.prisma.ticket.findUnique({
       where: {
         id,
@@ -103,12 +132,17 @@ export class TicketService implements ITicketService {
       },
     });
 
-    if (!ticket) throw new BadRequestException(['Ticket not found']);
+    if (!ticket) {
+      this.logger.warn(`Ticket not found with ID: ${id}`);
+      throw new BadRequestException(['Ticket not found']);
+    }
 
+    this.logger.debug(`Calculating sold count for ticket: ${ticket.title}`);
     const sold = await this.prisma.ticketSale.count({
       where: { ticketId: ticket.id },
     });
 
+    this.logger.debug(`Ticket found: ${ticket.title}, sold: ${sold}`);
     return { ...ticket, sold };
   }
 
@@ -152,17 +186,29 @@ export class TicketService implements ITicketService {
   }
 
   async delete({ id }: DeleteTicketDto): Promise<void> {
+    this.logger.debug(`Deleting ticket with ID: ${id}`);
+
     const ticketExists = await this.findOne({ id });
 
-    if (!ticketExists || ticketExists.isDeleted)
+    if (!ticketExists || ticketExists.isDeleted) {
+      this.logger.warn(
+        `Ticket deletion failed: Ticket not found with ID: ${id}`,
+      );
       throw new BadRequestException(['Ticket not found']);
+    }
 
     try {
+      this.logger.debug(`Marking ticket as deleted: ${ticketExists.title}`);
       await this.prisma.ticket.update({
         where: { id },
         data: { isDeleted: true },
       });
+
+      this.logger.log(
+        `Ticket deleted successfully: ${ticketExists.title} (ID: ${id})`,
+      );
     } catch (error) {
+      this.logger.error(`Failed to delete ticket with ID: ${id}`, error.stack);
       throw new InternalServerErrorException([error.message]);
     }
   }

@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { Ticket, TicketSale } from '@prisma/client';
 import { unlinkSync } from 'fs';
 import { PDFDocument } from 'pdf-lib';
@@ -19,6 +19,8 @@ import { generatePdf } from './utils/generatePdf';
 
 @Injectable()
 export class SaleService implements ISaleService {
+  private readonly logger = new Logger(SaleService.name);
+
   constructor(
     private readonly ticketService: TicketService,
     private readonly userService: UserService,
@@ -27,16 +29,28 @@ export class SaleService implements ISaleService {
   ) {}
 
   async create({ ticketId, userId, quantity }: CreateSaleDto): Promise<void> {
+    this.logger.debug(
+      `Creating sale: ticket=${ticketId}, user=${userId}, quantity=${quantity}`,
+    );
+
     const ticket = await this.ticketService.findOne({ id: ticketId });
-    if (!ticket) throw new BadRequestException(['Ticket not found']);
+    if (!ticket) {
+      this.logger.warn(`Sale creation failed: Ticket not found: ${ticketId}`);
+      throw new BadRequestException(['Ticket not found']);
+    }
 
     const user = await this.userService.findById(userId);
-    if (!user) throw new BadRequestException(['User not found']);
+    if (!user) {
+      this.logger.warn(`Sale creation failed: User not found: ${userId}`);
+      throw new BadRequestException(['User not found']);
+    }
 
+    this.logger.debug(`Validating ticket availability for: ${ticket.title}`);
     await this.ticketValidation(ticket, quantity);
 
     const createdSales: TicketSale[] = [];
 
+    this.logger.debug(`Creating ${quantity} sales in database transaction`);
     await this.prisma.$transaction(async (prisma) => {
       for (let i = 0; i < quantity; i++) {
         const sale = await prisma.ticketSale.create({
@@ -46,31 +60,42 @@ export class SaleService implements ISaleService {
       }
     });
 
+    this.logger.debug(`Created ${createdSales.length} sale records`);
+
+    this.logger.debug('Generating PDFs and QR codes for sales');
     const pdfDoc = await PDFDocument.create();
     const pdfPaths: string[] = [];
 
     for (const sale of createdSales) {
+      this.logger.debug(`Processing sale: ${sale.id}`);
       const qrContent = sale.id;
+
+      this.logger.debug('Generating QR code buffer');
       const buffer = await QRCode.toBuffer(qrContent);
       await generateOnePagePdf(buffer, ticket, user, pdfDoc);
 
+      this.logger.debug('Generating individual PDF');
       const pdf = await generatePdf(buffer, ticket, user);
       const pngQRCodeBuffer = await QRCode.toBuffer(qrContent, { type: 'png' });
       const qrCodeDataUrl = await QRCode.toDataURL(qrContent);
 
       const filename = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
+
+      this.logger.debug(`Uploading PDF to S3: ${filename}.pdf`);
       const pdfUrl = await this.awsService.uploadBufferToS3(
         Buffer.from(pdf),
         `${filename}.pdf`,
         'application/pdf',
       );
 
+      this.logger.debug(`Uploading QR code to S3: ${filename}.png`);
       const qrCodeUrl = await this.awsService.uploadBufferToS3(
         Buffer.from(pngQRCodeBuffer),
         `${filename}.png`,
         'image/png',
       );
 
+      this.logger.debug(`Updating sale record with URLs: ${sale.id}`);
       await this.prisma.ticketSale.update({
         where: { id: sale.id },
         data: {
@@ -81,19 +106,26 @@ export class SaleService implements ISaleService {
       });
     }
 
+    this.logger.debug('Cleaning up temporary PDF files');
     for (const path of pdfPaths) {
       try {
         unlinkSync(path);
       } catch (err) {
-        console.error(`Error deleting the pdf: ${path}`, err);
+        this.logger.error(`Error deleting PDF file: ${path}`, err);
       }
     }
 
+    this.logger.debug('Generating combined PDF document');
     const onePagePdf = await pdfDoc.save();
 
+    this.logger.debug(`Sending PDF email to: ${user.email}`);
     await this.sendPdfEmail(
       Buffer.from(onePagePdf).toString('base64'),
       user.email,
+    );
+
+    this.logger.log(
+      `Sale creation completed successfully for user: ${user.email}, ticket: ${ticket.title}, quantity: ${quantity}`,
     );
   }
 

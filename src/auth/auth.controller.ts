@@ -4,6 +4,7 @@ import {
   Controller,
   HttpCode,
   HttpStatus,
+  Logger,
   Post,
   Request,
   UseGuards,
@@ -18,21 +19,32 @@ import { RefreshTokenRequest } from './requests/refresh-token.request';
 
 @Controller('auth')
 export class AuthController {
+  private readonly logger = new Logger(AuthController.name);
+
   constructor(private readonly authService: AuthService) {}
 
   @HttpCode(HttpStatus.OK)
   @Post('login')
   async login(@Body() loginRequest: LoginRequest): Promise<LoginResponseDto> {
-    return this.authService.login(loginRequest);
+    this.logger.log(`Login attempt for email: ${loginRequest.email}`);
+
+    const result = await this.authService.login(loginRequest);
+    this.logger.log(`Login successful for user: ${result.user.email}`);
+    return result;
   }
 
   @UseGuards(AuthGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
   @Post('logout')
   async logout(@Request() { userId }: AuthenticatedRequest): Promise<void> {
-    if (!userId) throw new BadRequestException(['UserId not found in request']);
+    this.logger.log(`Logout attempt for user ID: ${userId}`);
 
-    return this.authService.logout({ userId });
+    if (!userId) {
+      throw new BadRequestException(['UserId not found in request']);
+    }
+
+    await this.authService.logout({ userId });
+    this.logger.log(`Logout successful for user ID: ${userId}`);
   }
 
   @HttpCode(HttpStatus.OK)
@@ -40,6 +52,10 @@ export class AuthController {
   async refreshToken(
     @Body() refreshToken: RefreshTokenRequest,
   ): Promise<AccessTokenResponseDto> {
-    return this.authService.refreshAccessToken(refreshToken);
+    this.logger.log('Refresh token attempt');
+
+    const result = await this.authService.refreshAccessToken(refreshToken);
+    this.logger.log('Refresh token successful');
+    return result;
   }
 }
