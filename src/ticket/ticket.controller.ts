@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  Logger,
   Param,
   Post,
   Query,
@@ -24,29 +25,69 @@ import { TicketService } from './ticket.service';
 
 @Controller('ticket')
 export class TicketController {
+  private readonly logger = new Logger(TicketController.name);
+
   constructor(private readonly ticketService: TicketService) {}
 
   @Get()
-  findAll(
+  async findAll(
     @Query()
     findAllRequest: FindAllRequest,
   ): Promise<TicketResponseDto[]> {
-    return this.ticketService.findAll(findAllRequest);
+    this.logger.log('Fetching all tickets');
+
+    try {
+      const result = await this.ticketService.findAll(findAllRequest);
+      this.logger.log(`Found ${result.length} tickets`);
+      return result;
+    } catch (error) {
+      this.logger.error('Failed to fetch tickets', error.stack);
+      throw error;
+    }
   }
 
   @Get(':id')
-  findOne(@Param() { id }: FindTicketByIdRequest): Promise<TicketResponseDto> {
-    return this.ticketService.findOne({ id });
+  async findOne(
+    @Param() { id }: FindTicketByIdRequest,
+  ): Promise<TicketResponseDto> {
+    this.logger.log(`Fetching ticket with ID: ${id}`);
+
+    try {
+      const result = await this.ticketService.findOne({ id });
+      this.logger.log(`Ticket found: ${result.title} (ID: ${id})`);
+      return result;
+    } catch (error) {
+      this.logger.error(`Failed to fetch ticket with ID: ${id}`, error.stack);
+      throw error;
+    }
   }
 
   @Roles(Role.ADMIN)
   @Post()
   @UseInterceptors(FileInterceptor('imageFile'))
-  create(
+  async create(
     @Body() createTicketRequest: CreateTicketRequest,
     @UploadedFile() imageFile?: Express.Multer.File,
   ) {
-    return this.ticketService.create(createTicketRequest, imageFile);
+    this.logger.log(`Creating ticket: ${createTicketRequest.title}`);
+    this.logger.debug(`Image file provided: ${!!imageFile}`);
+
+    try {
+      const result = await this.ticketService.create(
+        createTicketRequest,
+        imageFile,
+      );
+      this.logger.log(
+        `Ticket created successfully: ${result.title} (ID: ${result.id})`,
+      );
+      return result;
+    } catch (error) {
+      this.logger.error(
+        `Failed to create ticket: ${createTicketRequest.title}`,
+        error.stack,
+      );
+      throw error;
+    }
   }
 
   @Roles(Role.ADMIN)
@@ -71,7 +112,20 @@ export class TicketController {
 
   @Roles(Role.ADMIN)
   @Delete(':id')
-  delete(@Param() deleteTicketRequest: DeleteTicketRequest): Promise<void> {
-    return this.ticketService.delete(deleteTicketRequest);
+  async delete(
+    @Param() deleteTicketRequest: DeleteTicketRequest,
+  ): Promise<void> {
+    this.logger.log(`Deleting ticket with ID: ${deleteTicketRequest.id}`);
+
+    try {
+      await this.ticketService.delete(deleteTicketRequest);
+      this.logger.log(`Ticket deleted successfully: ${deleteTicketRequest.id}`);
+    } catch (error) {
+      this.logger.error(
+        `Failed to delete ticket: ${deleteTicketRequest.id}`,
+        error.stack,
+      );
+      throw error;
+    }
   }
 }

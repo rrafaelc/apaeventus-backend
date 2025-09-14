@@ -5,6 +5,7 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  Logger,
   Param,
   Post,
   Request,
@@ -23,31 +24,55 @@ import { SaleService } from './sale.service';
 
 @Controller('sale')
 export class SaleController {
+  private readonly logger = new Logger(SaleController.name);
+
   constructor(private readonly saleService: SaleService) {}
 
   @UseGuards(AuthGuard)
   @Post()
-  create(
+  async create(
     @Request() { userId }: AuthenticatedRequest,
     @Body() createSaleRequest: CreateSaleRequest,
   ): Promise<void> {
-    if (!userId) throw new BadRequestException(['UserId not found in request']);
+    this.logger.log(
+      `Creating sale for user: ${userId}, ticket: ${createSaleRequest.ticketId}, quantity: ${createSaleRequest.quantity}`,
+    );
 
-    return this.saleService.create({
+    if (!userId) {
+      throw new BadRequestException(['UserId not found in request']);
+    }
+
+    await this.saleService.create({
       ticketId: createSaleRequest.ticketId,
       userId,
       quantity: createSaleRequest.quantity,
     });
+
+    this.logger.log(
+      `Sale created successfully for user: ${userId}, ticket: ${createSaleRequest.ticketId}`,
+    );
   }
 
   @UseGuards(AuthGuard)
   @Get()
-  find(
+  async find(
     @Request() { userId }: AuthenticatedRequest,
   ): Promise<TicketSaleResponse[]> {
-    if (!userId) throw new BadRequestException(['UserId not found in request']);
+    this.logger.log(`Finding sales for user: ${userId}`);
 
-    return this.saleService.find({ userId });
+    if (!userId) {
+      this.logger.error('Find sales failed: UserId not found in request');
+      throw new BadRequestException(['UserId not found in request']);
+    }
+
+    try {
+      const result = await this.saleService.find({ userId });
+      this.logger.log(`Found ${result.length} sales for user: ${userId}`);
+      return result;
+    } catch (error) {
+      this.logger.error(`Find sales failed for user: ${userId}`, error.stack);
+      throw error;
+    }
   }
 
   @UseGuards(AuthGuard)
@@ -61,10 +86,25 @@ export class SaleController {
   @Roles(Role.ADMIN)
   @HttpCode(HttpStatus.OK)
   @Post('set-used')
-  updateAsUsed(
+  async updateAsUsed(
     @Body() updateAsUsedRequest: UpdateAsUsedRequest,
   ): Promise<void> {
-    return this.saleService.updateAsUsed(updateAsUsedRequest);
+    this.logger.log(
+      `Marking ticket sale as used: ${updateAsUsedRequest.saleId}`,
+    );
+
+    try {
+      await this.saleService.updateAsUsed(updateAsUsedRequest);
+      this.logger.log(
+        `Ticket sale marked as used: ${updateAsUsedRequest.saleId}`,
+      );
+    } catch (error) {
+      this.logger.error(
+        `Failed to mark ticket sale as used: ${updateAsUsedRequest.saleId}`,
+        error.stack,
+      );
+      throw error;
+    }
   }
 
   @Roles(Role.ADMIN)
