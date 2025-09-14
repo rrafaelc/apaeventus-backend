@@ -4,6 +4,8 @@ import { AppModule } from './app.module';
 import { GlobalExceptionFilter } from './common/filters/global-exception.filter';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 
+process.env.TZ = 'UTC';
+
 async function bootstrap() {
   const logger = new Logger('Bootstrap');
 
