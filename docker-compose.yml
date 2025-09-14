@@ -1,18 +1,20 @@
 services:
   db:
-    image: postgres:16
+    image: postgres:16.3-bookworm
     restart: always
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: yourpassword
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
       POSTGRES_DB: apaeventus
     ports:
-      - "5432:5432"
+      - "24805:5432"
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - pgdata-principal:/var/lib/postgresql/data
 
   backend:
     build: .
+    env_file:
+      - ./.env
     depends_on:
       - db
     environment:
@@ -27,7 +29,8 @@ services:
       S3_BUCKET_NAME: ${S3_BUCKET_NAME}
     ports:
       - "8080:3333"
-    command: ./entrypoint.sh
 
 volumes:
-  pgdata:
+  pgdata-principal:
+    name: backend_pgdata
+    external: true
