@@ -1,6 +1,11 @@
-import { BadRequestException, Injectable, Logger } from '@nestjs/common';
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  Logger,
+  forwardRef,
+} from '@nestjs/common';
 import { Ticket, TicketSale } from '@prisma/client';
-import { unlinkSync } from 'fs';
 import { PDFDocument } from 'pdf-lib';
 import * as QRCode from 'qrcode';
 import { AWSService } from 'src/aws/aws.service';
@@ -22,15 +27,24 @@ export class SaleService implements ISaleService {
   private readonly logger = new Logger(SaleService.name);
 
   constructor(
+    @Inject(forwardRef(() => TicketService))
     private readonly ticketService: TicketService,
     private readonly userService: UserService,
     private readonly prisma: PrismaService,
     private readonly awsService: AWSService,
   ) {}
 
-  async create({ ticketId, userId, quantity }: CreateSaleDto): Promise<void> {
+  /**
+   * Cria vendas pendentes no banco (sem gerar PDFs ou enviar emails)
+   * Usado quando a venda está aguardando confirmação de pagamento do Stripe
+   */
+  async createPendingSales({
+    ticketId,
+    userId,
+    quantity,
+  }: CreateSaleDto): Promise<TicketSale[]> {
     this.logger.debug(
-      `Creating sale: ticket=${ticketId}, user=${userId}, quantity=${quantity}`,
+      `Creating pending sales: ticket=${ticketId}, user=${userId}, quantity=${quantity}`,
     );
 
     const ticket = await this.ticketService.findOne({ id: ticketId });
@@ -50,23 +64,60 @@ export class SaleService implements ISaleService {
 
     const createdSales: TicketSale[] = [];
 
-    this.logger.debug(`Creating ${quantity} sales in database transaction`);
+    this.logger.debug(
+      `Creating ${quantity} pending sales in database transaction`,
+    );
     await this.prisma.$transaction(async (prisma) => {
       for (let i = 0; i < quantity; i++) {
         const sale = await prisma.ticketSale.create({
-          data: { ticketId: ticket.id, userId: user.id },
+          data: {
+            ticketId: ticket.id,
+            userId: user.id,
+            paymentStatus: 'pending', // Marca como pendente
+          },
         });
         createdSales.push(sale);
       }
     });
 
-    this.logger.debug(`Created ${createdSales.length} sale records`);
+    this.logger.log(
+      `Created ${createdSales.length} pending sale records (awaiting payment confirmation)`,
+    );
 
-    this.logger.debug('Generating PDFs and QR codes for sales');
+    return createdSales;
+  }
+
+  /**
+   * Processa vendas após pagamento aprovado: gera PDFs, QR codes e envia email
+   * Chamado pelo webhook do Stripe quando o pagamento é confirmado
+   */
+  async processApprovedSales(salesIds: string[]): Promise<void> {
+    this.logger.debug(
+      `Processing approved sales: ${salesIds.length} sales to process`,
+    );
+
+    const sales = await this.prisma.ticketSale.findMany({
+      where: {
+        id: { in: salesIds },
+      },
+      include: {
+        ticket: true,
+        customer: true, // 'customer' é o nome da relação no Prisma schema
+      },
+    });
+
+    if (sales.length === 0) {
+      this.logger.warn('No sales found to process');
+      return;
+    }
+
+    const ticket = sales[0].ticket;
+    const user = sales[0].customer;
+
+    this.logger.debug(`Generating PDFs and QR codes for ${sales.length} sales`);
     const pdfDoc = await PDFDocument.create();
-    const pdfPaths: string[] = [];
 
-    for (const sale of createdSales) {
+    for (const sale of sales) {
       this.logger.debug(`Processing sale: ${sale.id}`);
       const qrContent = sale.id;
 
@@ -102,17 +153,9 @@ export class SaleService implements ISaleService {
           pdfUrl,
           qrCodeUrl,
           qrCodeDataUrl,
+          paymentStatus: 'paid', // Marca como pago
         },
       });
-    }
-
-    this.logger.debug('Cleaning up temporary PDF files');
-    for (const path of pdfPaths) {
-      try {
-        unlinkSync(path);
-      } catch (err) {
-        this.logger.error(`Error deleting PDF file: ${path}`, err);
-      }
     }
 
     this.logger.debug('Generating combined PDF document');
@@ -125,7 +168,7 @@ export class SaleService implements ISaleService {
     );
 
     this.logger.log(
-      `Sale creation completed successfully for user: ${user.email}, ticket: ${ticket.title}, quantity: ${quantity}`,
+      `Approved sales processed successfully for user: ${user.email}, ticket: ${ticket.title}, quantity: ${sales.length}`,
     );
   }
 

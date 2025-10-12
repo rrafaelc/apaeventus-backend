@@ -14,6 +14,7 @@ import {
 import { Role } from '@prisma/client';
 import { AuthGuard } from 'src/auth/guards/auth.guard';
 import { AuthenticatedRequest } from 'src/auth/requests/authenticated-request';
+import { StripeService } from 'src/stripe/stripe.service';
 import { Roles } from 'src/user/decorators/roles.decorator';
 import { TicketSaleResponse } from './dtos/ticket-sale.response';
 import { CreateSaleRequest } from './requests/create-sale.request';
@@ -26,31 +27,49 @@ import { SaleService } from './sale.service';
 export class SaleController {
   private readonly logger = new Logger(SaleController.name);
 
-  constructor(private readonly saleService: SaleService) {}
+  constructor(
+    private readonly saleService: SaleService,
+    private readonly stripeService: StripeService,
+  ) {}
 
   @UseGuards(AuthGuard)
   @Post()
-  async create(
+  async createCheckoutSession(
     @Request() { userId }: AuthenticatedRequest,
-    @Body() createSaleRequest: CreateSaleRequest,
-  ): Promise<void> {
+    @Body()
+    createSaleRequest: CreateSaleRequest & {
+      successUrl?: string;
+      cancelUrl?: string;
+    },
+  ) {
     this.logger.log(
-      `Creating sale for user: ${userId}, ticket: ${createSaleRequest.ticketId}, quantity: ${createSaleRequest.quantity}`,
+      `Creating Stripe checkout session for user: ${userId}, ticket: ${createSaleRequest.ticketId}`,
     );
 
     if (!userId) {
       throw new BadRequestException(['UserId not found in request']);
     }
 
-    await this.saleService.create({
-      ticketId: createSaleRequest.ticketId,
-      userId,
-      quantity: createSaleRequest.quantity,
-    });
+    try {
+      const result = await this.stripeService.createCheckoutSession({
+        ticketId: createSaleRequest.ticketId,
+        userId,
+        quantity: createSaleRequest.quantity,
+        successUrl: createSaleRequest.successUrl,
+        cancelUrl: createSaleRequest.cancelUrl,
+      });
 
-    this.logger.log(
-      `Sale created successfully for user: ${userId}, ticket: ${createSaleRequest.ticketId}`,
-    );
+      this.logger.log(
+        `Stripe checkout session created: ${result.sessionId} for user: ${userId}`,
+      );
+      return result;
+    } catch (error) {
+      this.logger.error(
+        `Failed to create checkout session for user: ${userId}`,
+        error.stack,
+      );
+      throw error;
+    }
   }
 
   @UseGuards(AuthGuard)

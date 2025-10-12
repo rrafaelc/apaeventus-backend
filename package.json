@@ -1,7 +1,7 @@
 {
   "name": "apaeventus-backend",
-  "version": "1.0.0",
-  "description": "",
+  "version": "3.0.0",
+  "description": "ApaEventus Backend API with Stripe Payment Integration",
   "author": "",
   "private": true,
   "license": "MIT",
@@ -40,7 +40,8 @@
     "pdf-lib": "^1.17.1",
     "qrcode": "^1.5.4",
     "reflect-metadata": "^0.2.2",
-    "rxjs": "^7.8.1"
+    "rxjs": "^7.8.1",
+    "stripe": "^18.5.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.2.0",

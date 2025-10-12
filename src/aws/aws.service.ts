@@ -1,5 +1,9 @@
 import { InvokeCommand, LambdaClient } from '@aws-sdk/client-lambda';
-import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import {
+  DeleteObjectCommand,
+  PutObjectCommand,
+  S3Client,
+} from '@aws-sdk/client-s3';
 import {
   Injectable,
   InternalServerErrorException,
@@ -123,6 +127,38 @@ export class AWSService implements IAWSService {
         error.stack,
       );
       throw new InternalServerErrorException(['Error uploading to S3']);
+    }
+  }
+
+  async deleteFileFromS3(fileUrl: string): Promise<void> {
+    const bucketName = awsConstants.s3_bucket_name!;
+
+    // Extrair o nome do arquivo da URL
+    // URL format: https://bucket-name.s3.region.amazonaws.com/filename
+    const fileName = fileUrl.split('/').pop();
+
+    if (!fileName) {
+      this.logger.warn(`Invalid file URL for deletion: ${fileUrl}`);
+      throw new InternalServerErrorException(['Invalid file URL']);
+    }
+
+    this.logger.debug(`Deleting file from S3: ${fileName}`);
+
+    try {
+      await this.s3.send(
+        new DeleteObjectCommand({
+          Bucket: bucketName,
+          Key: fileName,
+        }),
+      );
+
+      this.logger.log(`File deleted successfully from S3: ${fileName}`);
+    } catch (error) {
+      this.logger.error(
+        `Error deleting file from S3: ${fileName}`,
+        error.stack,
+      );
+      throw new InternalServerErrorException(['Error deleting from S3']);
     }
   }
 }

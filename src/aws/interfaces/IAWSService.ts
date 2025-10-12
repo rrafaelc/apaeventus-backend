@@ -5,4 +5,5 @@ export interface IAWSService {
   sendEmail(sendEmailDto: SendEmailDto): Promise<void>;
   sendEmailWithPdf(sendEmailWithPdfDto: SendEmailWithPdfDto): Promise<void>;
   uploadFileToS3(file: Express.Multer.File): Promise<string>;
+  deleteFileFromS3(fileUrl: string): Promise<void>;
 }
