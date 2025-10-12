@@ -14,6 +14,7 @@ async function bootstrap() {
 
     const app = await NestFactory.create(AppModule, {
       logger: ['log', 'error', 'warn', 'debug', 'verbose'],
+      rawBody: true, // Necessário para validar webhooks do Stripe
     });
 
     app.useGlobalPipes(new ValidationPipe());

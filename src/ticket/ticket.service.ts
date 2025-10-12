@@ -9,6 +9,7 @@ import * as dayjs from 'dayjs';
 import * as utc from 'dayjs/plugin/utc';
 import { AWSService } from 'src/aws/aws.service';
 import { PrismaService } from 'src/database/prisma.service';
+import { StripeService } from 'src/stripe/stripe.service';
 import { CountSoldDto } from './dtos/count-sold.dto';
 import { CountUsedDto } from './dtos/count-used.dto';
 import { CreateTicketDto } from './dtos/create-ticket.dto';
@@ -28,6 +29,7 @@ export class TicketService implements ITicketService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly awsService: AWSService,
+    private readonly stripeService: StripeService,
   ) {}
 
   async create(
@@ -93,8 +95,66 @@ export class TicketService implements ITicketService {
       this.logger.log(
         `Ticket created successfully: ${ticket.title} (ID: ${ticket.id})`,
       );
-      return ticket;
+
+      // Criar preço no Stripe automaticamente
+      try {
+        this.logger.debug(
+          `Creating Stripe price automatically for ticket: ${ticket.id}`,
+        );
+        const stripePriceId = await this.stripeService.createPrice(
+          ticket.id,
+          ticket.price,
+        );
+
+        // Atualizar o ticket com o stripePriceId
+        const updatedTicket = await this.prisma.ticket.update({
+          where: { id: ticket.id },
+          data: { stripePriceId },
+        });
+
+        this.logger.log(
+          `Stripe price created automatically: ${stripePriceId} for ticket: ${ticket.title}`,
+        );
+
+        return updatedTicket;
+      } catch (stripeError) {
+        // Se falhar ao criar no Stripe, apagar o ticket do banco e a imagem do S3
+        this.logger.error(
+          `Failed to create Stripe price for ticket: ${ticket.id}. Rolling back ticket creation.`,
+          stripeError,
+        );
+
+        try {
+          // Apagar a imagem do S3 se foi enviada
+          if (imageUrl) {
+            this.logger.debug(`Deleting image from S3: ${imageUrl}`);
+            await this.awsService.deleteFileFromS3(imageUrl);
+            this.logger.debug(`Image deleted from S3 successfully`);
+          }
+
+          // Apagar o ticket do banco
+          await this.prisma.ticket.delete({
+            where: { id: ticket.id },
+          });
+          this.logger.debug(`Ticket ${ticket.id} deleted from database`);
+        } catch (deleteError) {
+          this.logger.error(
+            `Failed to rollback ticket after Stripe error: ${ticket.id}`,
+            deleteError,
+          );
+        }
+
+        // Retornar erro específico do Stripe
+        throw new BadRequestException([
+          `Failed to create ticket in Stripe payment system: ${stripeError.message}`,
+        ]);
+      }
     } catch (error) {
+      // Se for um erro do Stripe que já tratamos, propaga
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+
       this.logger.error(`Failed to create ticket: ${data.title}`, error.stack);
       throw new InternalServerErrorException([error.message]);
     }

@@ -32,31 +32,34 @@ model User {
 }
 
 model Ticket {
-  id          String   @id @default(uuid())
-  title       String
-  description String
-  eventDate   DateTime
-  imageUrl    String?
-  quantity    Int
-  price       Float
-  isActive    Boolean  @default(true)
-  isDeleted   Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id            String   @id @default(uuid())
+  title         String
+  description   String
+  eventDate     DateTime
+  imageUrl      String?
+  quantity      Int
+  price         Float
+  stripePriceId String?
+  isActive      Boolean  @default(true)
+  isDeleted     Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
   sales TicketSale[]
 }
 
 model TicketSale {
-  id            String   @id @default(uuid())
-  userId        String
-  ticketId      String
-  used          Boolean  @default(false)
-  pdfUrl        String?
-  qrCodeUrl     String?
-  qrCodeDataUrl String?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id              String   @id @default(uuid())
+  userId          String
+  ticketId        String
+  used            Boolean  @default(false)
+  pdfUrl          String?
+  qrCodeUrl       String?
+  qrCodeDataUrl   String?
+  stripeSessionId String?
+  paymentStatus   String?  @default("pending") // pending, paid, failed, refunded
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
   customer User   @relation("UserPurchases", fields: [userId], references: [id])
   ticket   Ticket @relation(fields: [ticketId], references: [id])
