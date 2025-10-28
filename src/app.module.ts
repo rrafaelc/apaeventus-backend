@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { AuthModule } from './auth/auth.module';
 import { AWSModule } from './aws/aws.module';
+import { ChatbotModule } from './chatbot/chatbot.module';
 import { DatabaseModule } from './database/database.module';
 import { PrismaService } from './database/prisma.service';
 import { RecoverPasswordModule } from './recover-password/recover-password.module';
@@ -21,6 +22,7 @@ import { UserModule } from './user/user.module';
     AWSModule,
     RecoverPasswordModule,
     StripeModule,
+    ChatbotModule,
   ],
   controllers: [],
   providers: [PrismaService],
