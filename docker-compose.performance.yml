@@ -1,0 +1,97 @@
+# Docker Compose para testes de performance
+# Simula um servidor VPS básico na nuvem com recursos limitados
+# 
+# IMPORTANTE: O build acontece SEM limites (precisa ~2GB RAM)
+#             O runtime é limitado a 1GB RAM (simula servidor real)
+#
+# Uso:
+#   docker-compose -f docker-compose.performance.yml up --build -d
+#   docker-compose -f docker-compose.performance.yml logs -f backend-performance
+#   docker-compose -f docker-compose.performance.yml down -v
+#
+# Ver logs em tempo real:
+#   docker-compose -f docker-compose.performance.yml logs backend-performance -f
+#
+# Simula RUNTIME: 1 vCPU + 1GB RAM (backend) + 1 vCPU + 1GB RAM (database)
+# Equivalente a: AWS EC2 t3.small, DigitalOcean Basic Droplet, Azure B1s
+
+services:
+  db-performance:
+    image: postgres:16.3-bookworm
+    container_name: apaeventus-db-performance
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+      POSTGRES_DB: apaeventus
+      # Configurações otimizadas para recursos limitados
+      POSTGRES_SHARED_BUFFERS: 256MB
+      POSTGRES_EFFECTIVE_CACHE_SIZE: 512MB
+      POSTGRES_WORK_MEM: 4MB
+      POSTGRES_MAINTENANCE_WORK_MEM: 64MB
+      POSTGRES_MAX_CONNECTIONS: 50
+    ports:
+      - "5432:5432"
+    # Limites de recursos - Simula VPS básico
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'           # 1 vCPU
+          memory: 1024M         # 1GB RAM
+        reservations:
+          cpus: '0.5'           # Mínimo garantido
+          memory: 512M          # Mínimo garantido
+    networks:
+      - performance-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  backend-performance:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: nestjs-backend-performance
+    restart: unless-stopped
+    depends_on:
+      db-performance:
+        condition: service_healthy
+    env_file:
+      - ./.env
+    environment:
+      DATABASE_URL: postgresql://postgres:${DATABASE_PASSWORD}@db-performance:5432/apaeventus?schema=public
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN}
+      JWT_REFRESH_EXPIRES_IN: ${JWT_REFRESH_EXPIRES_IN}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      AWS_REGION: ${AWS_REGION}
+      S3_BUCKET_NAME: ${S3_BUCKET_NAME}
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET}
+      NODE_ENV: production
+      PORT: 3333
+      # Limita heap do Node.js para runtime
+      NODE_OPTIONS: --max-old-space-size=768
+    ports:
+      - "3333:3333"
+    # Limites de recursos no RUNTIME (depois do build)
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'           # 1 vCPU
+          memory: 1024M         # 1GB RAM no runtime
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+    networks:
+      - performance-network
+
+networks:
+  performance-network:
+    name: apaeventus_performance_network
+    driver: bridge
