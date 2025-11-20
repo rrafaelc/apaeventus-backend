@@ -31,7 +31,7 @@ services:
       POSTGRES_MAINTENANCE_WORK_MEM: 64MB
       POSTGRES_MAX_CONNECTIONS: 50
     ports:
-      - "5432:5432"
+      - "5433:5432"
     # Limites de recursos - Simula VPS básico
     deploy:
       resources:
